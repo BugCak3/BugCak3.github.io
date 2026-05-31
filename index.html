@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✦ mi galería de pixel art ✦</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<!-- aplica tema antes del render para evitar flash y reflows tardíos -->
+<script>if(localStorage.getItem('darkMode')==='1')document.documentElement.classList.add('dark-pre');</script>
+<style>
+:root {
+  --bg:        #ede9e0;
+  --bg2:       #e4dfd3;
+  --bg3:       #d8d2c4;
+  --win-bg:    #f5f2eb;
+  --border:    #b0a688;
+  --border-dk: #8c7f60;
+  --title-c:   #5c5036;
+  --text:      #38301f;
+  --muted:     #8a7d62;
+  --accent:    #c4916a;
+  --warm:      #c4845a;
+  --dark-mode: 0;
+}
+
+body.dark {
+  --bg:        #1e1a14;
+  --bg2:       #2a2418;
+  --bg3:       #1a1510;
+  --win-bg:    #242018;
+  --border:    #4a3e28;
+  --border-dk: #6a5a3a;
+  --title-c:   #c8b890;
+  --text:      #e8dfc8;
+  --muted:     #8a7d62;
+  --accent:    #c4916a;
+  --warm:      #c4845a;
+}
+html.dark-pre body {
+  --bg:        #1e1a14;
+  --bg2:       #2a2418;
+  --bg3:       #1a1510;
+  --win-bg:    #242018;
+  --border:    #4a3e28;
+  --border-dk: #6a5a3a;
+  --title-c:   #c8b890;
+  --text:      #e8dfc8;
+  --muted:     #8a7d62;
+  --accent:    #c4916a;
+  --warm:      #c4845a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='%23b0a688' fill-opacity='0.2'/%3E%3C/svg%3E");
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.6s ease, color 0.6s ease;
+}
+
+/* ── DARK MODE BULB ─── */
+#bulb-wrap {
+  position: fixed;
+  top: 0;
+  left: 32px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.bulb-cord {
+  width: 2px;
+  height: 28px;
+  background: var(--border-dk);
+  transition: background 0.4s;
+}
+.bulb-btn {
+  width: 32px;
+  height: 32px;
+  background: var(--win-bg);
+  border: 2px solid var(--border-dk);
+  box-shadow: 2px 2px 0 var(--border-dk);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: background 0.4s, transform 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+#bulb-wrap:hover .bulb-btn { transform: translateY(2px); box-shadow: 1px 1px 0 var(--border-dk); }
+#bulb-wrap:active .bulb-btn { transform: translateY(3px); box-shadow: 0 0 0 var(--border-dk); }
+
+body.dark .bulb-btn {
+  background: #2a1e10;
+  box-shadow: 2px 2px 0 #6a5a3a, 0 0 18px 6px rgba(255,200,80,0.35);
+}
+body.dark .bulb-cord { background: #6a5a3a; }
+
+@keyframes cordSwing {
+  0%   { transform: rotate(0deg); }
+  20%  { transform: rotate(8deg); }
+  40%  { transform: rotate(-6deg); }
+  60%  { transform: rotate(4deg); }
+  80%  { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+#bulb-wrap.swinging { animation: cordSwing 0.6s ease; transform-origin: top center; }
+
+/* ── CURTAIN OVERLAY ─── */
+#curtain {
+  position: fixed;
+  left: 0; right: 0;
+  height: 100vh;
+  background: linear-gradient(to bottom, #1a1510 0%, #2a1e14 100%);
+  z-index: 100;
+  pointer-events: none;
+  bottom: 0;
+  transform: translateY(100%);
+  transition: transform 0.65s cubic-bezier(0.76, 0, 0.24, 1);
+}
+#curtain.slide-up { transform: translateY(0%); pointer-events: all; }
+#curtain.slide-done { transform: translateY(-100%); pointer-events: none; transition: none; }
+
+/* ── GALLERY SECTION ─────────────────────── */
+#section-gallery {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 0;
+}
+
+/* ── HEADER ─────────────────────────────── */
+header {
+  text-align: center;
+  padding: 60px 20px 40px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+header.hdr-entered { opacity: 1; transform: translateY(0); }
+
+.hdeco {
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  letter-spacing: 6px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  transition: color 0.6s;
+}
+
+h1 {
+  font-family: 'Silkscreen', monospace;
+  font-size: clamp(26px, 5vw, 44px);
+  line-height: 1.4;
+  letter-spacing: 2px;
+  transition: color 0.6s;
+}
+h1 em { color: var(--accent); font-style: normal; }
+
+.hint {
+  margin-top: 14px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  transition: color 0.6s;
+}
+.rule { width: 56px; height: 2px; background: var(--border); margin: 22px auto 0; transition: background 0.6s; }
+
+/* ── NAV BAR IN HEADER ─────────────────── */
+.header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 22px;
+}
+
+.nav-item {
+  font-family: 'Silkscreen', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  padding: 8px 16px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s, font-size 0.2s, transform 0.2s;
+  user-select: none;
+  border-bottom: 2px solid transparent;
+  display: inline-block;
+}
+.nav-item:hover {
+  color: var(--text);
+  transform: translateY(4px);
+  font-size: 13px;
+  border-bottom-color: var(--accent);
+}
+.nav-item.nav-active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+.nav-sep {
+  color: var(--border-dk);
+  font-family: 'Silkscreen', monospace;
+  font-size: 12px;
+  user-select: none;
+}
+
+.nav-item.nav-pixelart:hover {
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(196,145,106,0.6), 0 0 20px rgba(196,145,106,0.3);
+}
+
+.nav-item.nav-music {
+  position: relative;
+  overflow: visible;
+}
+.music-note {
+  position: absolute;
+  font-size: 14px;
+  pointer-events: none;
+  animation: noteFloat 1.1s ease-out forwards;
+  z-index: 10;
+  line-height: 1;
+}
+@keyframes noteFloat {
+  0%   { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: translateY(-42px) rotate(20deg) scale(0.7); }
+}
+
+/* ── GRID ────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 64px 48px;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 48px 40px;
+}
+
+/* ── WINDOWS ─────────────────────────────── */
+.win-wrap {
+  position: relative;
+  cursor: pointer;
+  overflow: visible;
+  border-radius: 2px;
+  opacity: 0;
+  transform: scale(0.88) translateY(12px);
+  transition:
+    opacity   0.45s cubic-bezier(0.34, 1.3, 0.64, 1),
+    transform 0.45s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.win-wrap.win-entered  { opacity: 1; transform: scale(1) translateY(0); }
+.win-wrap.win-exit {
+  opacity: 0 !important;
+  transform: scale(0.97) translateY(-60px) !important;
+  transition:
+    opacity   0.5s cubic-bezier(0.4, 0, 0.6, 1),
+    transform 0.5s cubic-bezier(0.4, 0, 0.6, 1) !important;
+}
+.win-wrap.win-exit-right {
+  opacity: 0 !important;
+  transform: scale(0.97) translateX(60px) !important;
+  transition:
+    opacity   0.5s cubic-bezier(0.4, 0, 0.6, 1),
+    transform 0.5s cubic-bezier(0.4, 0, 0.6, 1) !important;
+}
+.win-wrap.win-enter-below {
+  opacity: 0;
+  transform: scale(0.97) translateY(60px);
+}
+.win-wrap.win-enter-right {
+  opacity: 0;
+  transform: scale(0.97) translateX(-60px);
+}
+
+.win-box {
+  border: 2px solid var(--border-dk);
+  background: var(--win-bg);
+  box-shadow: 6px 6px 0 var(--border-dk);
+  transition: box-shadow 0.25s, border-color 0.25s, background 0.6s;
+}
+.win-wrap:hover .win-box {
+  box-shadow: 6px 6px 0 var(--title-c);
+  border-color: var(--title-c);
+}
+.win-bar {
+  background: var(--bg3);
+  border-bottom: 2px solid var(--border-dk);
+  height: 10px;
+  transition: background 0.4s;
+}
+.win-wrap:hover .win-bar { background: var(--bg2); }
+
+.win-screen {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  overflow: hidden;
+}
+.win-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(20,16,10,0.38);
+  z-index: 2;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+.win-wrap:hover .win-screen::before { opacity: 0; }
+.win-screen::after {
+  content: 'z z z';
+  position: absolute;
+  top: 16px; right: 18px;
+  font-family: 'Silkscreen', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.55);
+  z-index: 3;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.win-wrap:hover .win-screen::after { opacity: 0; }
+
+/* magic light on hover */
+.win-magic-light {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(ellipse at 50% 60%, rgba(255,210,140,0.22) 0%, rgba(255,160,80,0.10) 40%, transparent 70%);
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.55s ease;
+  animation: lightPulse 2.5s ease-in-out infinite;
+}
+.win-wrap:hover .win-magic-light { opacity: 1; }
+@keyframes lightPulse {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+.bg-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  z-index: 1;
+}
+.anim-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.35s;
+  pointer-events: none;
+}
+.win-wrap:hover .anim-canvas { opacity: 1; }
+
+.win-label {
+  font-family: 'Silkscreen', monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 12px;
+  transition: color 0.3s;
+}
+.win-wrap:hover .win-label { color: var(--text); }
+
+/* ── MAIN FOOTER BAR ─────────────────────── */
+#main-footer {
+  background: var(--bg3);
+  border-top: 2px solid var(--border-dk);
+  padding: 22px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  transition: background 0.6s, border-color 0.6s;
+}
+.footer-copy {
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--title-c);
+  line-height: 1.8;
+  transition: color 0.6s;
+}
+.footer-copy span { color: var(--accent); }
+.footer-copy a { color: var(--accent); text-decoration: none; }
+.footer-copy a:hover { text-decoration: underline; }
+
+.btn-about {
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--win-bg);
+  background: var(--warm);
+  border: 2px solid #9e5e30;
+  box-shadow: 3px 3px 0 #9e5e30;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.btn-about:hover {
+  background: #d4956a;
+  transform: translateY(-1px);
+  box-shadow: 3px 4px 0 #9e5e30;
+}
+.btn-about:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0 #9e5e30;
+}
+
+.stag {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-align: center;
+  padding-top: 4px;
+  transition: color 0.6s;
+}
+
+@media (max-width: 600px) {
+  #main-footer { flex-direction: column; align-items: flex-start; }
+  .header-nav { flex-wrap: wrap; gap: 2px; }
+}
+</style>
+</head>
+<body>
+
+<!-- dark mode bulb -->
+<div id="bulb-wrap" title="Cambiar tema">
+  <div class="bulb-cord"></div>
+  <div class="bulb-btn" id="bulb-btn">💡</div>
+</div>
+
+<!-- curtain overlay -->
+<div id="curtain"></div>
+
+<!-- ══ GALLERY SECTION ══ -->
+<section id="section-gallery">
+
+  <header>
+    <div class="hdeco">✦ &nbsp; neocities &nbsp; ✦</div>
+    <h1>mi galería de<br><em>pixel art</em></h1>
+    <p class="hint">pasa el cursor para despertar las ventanas</p>
+    <div class="rule"></div>
+
+    <!-- NAV -->
+    <nav class="header-nav">
+      <span class="nav-item nav-active nav-pixelart" data-section="gallery">pixel art</span>
+      <span class="nav-sep">·</span>
+      <span class="nav-item nav-music" id="nav-music" data-section="music">música</span>
+      <span class="nav-sep">·</span>
+      <span class="nav-item" id="nav-about" data-section="about">about me</span>
+    </nav>
+  </header>
+
+  <div style="max-width:1040px;margin:0 auto;padding:0 40px 4px;">
+    <p class="stag">— categorías —</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- SKY -->
+    <div class="win-wrap" id="win-sky">
+      <div class="win-magic-light"></div>
+      <div class="win-box">
+        <div class="win-bar"></div>
+        <div class="win-screen">
+          <canvas class="bg-canvas" id="bg-sky"></canvas>
+          <canvas class="anim-canvas" id="anim-sky"></canvas>
+        </div>
+      </div>
+      <p class="win-label">sky</p>
+    </div>
+
+    <!-- MI PROYECTO -->
+    <div class="win-wrap" id="win-game">
+      <div class="win-magic-light"></div>
+      <div class="win-box">
+        <div class="win-bar"></div>
+        <div class="win-screen">
+          <canvas class="bg-canvas" id="bg-game"></canvas>
+          <canvas class="anim-canvas" id="anim-game"></canvas>
+        </div>
+      </div>
+      <p class="win-label">mi proyecto</p>
+    </div>
+
+    <!-- FANART -->
+    <div class="win-wrap" id="win-vid">
+      <div class="win-magic-light"></div>
+      <div class="win-box">
+        <div class="win-bar"></div>
+        <div class="win-screen">
+          <canvas class="bg-canvas" id="bg-vid"></canvas>
+          <canvas class="anim-canvas" id="anim-vid"></canvas>
+        </div>
+      </div>
+      <p class="win-label">fanart</p>
+    </div>
+
+    <!-- VARIOS -->
+    <div class="win-wrap" id="win-anim">
+      <div class="win-magic-light"></div>
+      <div class="win-box">
+        <div class="win-bar"></div>
+        <div class="win-screen">
+          <canvas class="bg-canvas" id="bg-anim"></canvas>
+          <canvas class="anim-canvas" id="anim-anim"></canvas>
+        </div>
+      </div>
+      <p class="win-label">varios</p>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- MAIN FOOTER BAR -->
+  <footer id="main-footer">
+    <div class="footer-copy">
+      <div>✦ hecho con <span>amor</span> · <a href="https://neocities.org" target="_blank">neocities</a> ✦</div>
+      <div style="margin-top:5px;font-size:8px;">pixel art es mío · no repost sin crédito</div>
+    </div>
+    <button class="btn-about" id="btn-about">✦ about me ✦</button>
+  </footer>
+
+</section>
+
+<script>
+/* ════════════════════════════════════════
+   DARK MODE
+════════════════════════════════════════ */
+const bulbWrap = document.getElementById('bulb-wrap');
+let isDark = localStorage.getItem('darkMode') === '1';
+
+function applyTheme(dark) {
+  if (dark) {
+    document.body.classList.add('dark');
+    document.documentElement.classList.add('dark-pre');
+    document.getElementById('bulb-btn').textContent = '🕯️';
+  } else {
+    document.body.classList.remove('dark');
+    document.documentElement.classList.remove('dark-pre');
+    document.getElementById('bulb-btn').textContent = '💡';
+  }
+}
+
+bulbWrap.addEventListener('click', () => {
+  isDark = !isDark;
+  localStorage.setItem('darkMode', isDark ? '1' : '0');
+  applyTheme(isDark);
+  bulbWrap.classList.remove('swinging');
+  void bulbWrap.offsetWidth;
+  bulbWrap.classList.add('swinging');
+  setTimeout(() => bulbWrap.classList.remove('swinging'), 700);
+});
+
+applyTheme(isDark);
+
+/* ════════════════════════════════════════
+   MUSIC NAV — floating notes
+════════════════════════════════════════ */
+const navMusic = document.getElementById('nav-music');
+const NOTES = ['♩','♪','♫','♬','𝅘𝅥𝅮'];
+let noteInterval = null;
+
+function spawnNote() {
+  const note = document.createElement('span');
+  note.className = 'music-note';
+  note.textContent = NOTES[Math.floor(Math.random() * NOTES.length)];
+  const offsetX = Math.random() * 60 - 10;
+  note.style.left = offsetX + 'px';
+  note.style.bottom = '100%';
+  note.style.color = `hsl(${30 + Math.random()*40}, 70%, 65%)`;
+  navMusic.appendChild(note);
+  setTimeout(() => note.remove(), 1150);
+}
+
+navMusic.addEventListener('mouseenter', () => {
+  spawnNote();
+  noteInterval = setInterval(spawnNote, 220);
+});
+navMusic.addEventListener('mouseleave', () => {
+  clearInterval(noteInterval);
+  noteInterval = null;
+});
+
+/* ════════════════════════════════════════
+   GIF LOADER + WINDOW ANIMATION SYSTEM
+════════════════════════════════════════ */
+let gifuctReady = null;
+function loadGifuct() {
+  if (gifuctReady) return gifuctReady;
+  gifuctReady = new Promise(resolve => {
+    if (window.parseGIF) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/dist/gifuct-js.min.js';
+    s.onload = () => resolve();
+    document.head.appendChild(s);
+  });
+  return gifuctReady;
+}
+
+class WinAnim {
+  constructor({ wrapId, animId, gifSrc, fps = 12 }) {
+    this.wrap     = document.getElementById(wrapId);
+    this.canvas   = document.getElementById(animId);
+    this.ctx      = this.canvas.getContext('2d');
+    this.gifSrc   = gifSrc;
+    this.fps      = fps;
+    this.frameDur = 1000 / fps;
+    this.frames   = [];
+    this.loaded   = false;
+    this.loading  = false;
+    this.frameIdx = 0;
+    this.direction= 1;
+    this.rafId    = null;
+    this.lastTime = 0;
+    this.playing  = false;
+    this._bindEvents();
+  }
+  _bindEvents() {
+    this.wrap.addEventListener('mouseenter', () => this._startPlay(1));
+    this.wrap.addEventListener('mouseleave', () => this._startPlay(-1));
+  }
+  _startPlay(dir) {
+    this.direction = dir;
+    if (!this.gifSrc) return;
+    if (!this.loaded) { this._load().then(() => { if (this.direction === dir) this._play(); }); return; }
+    this._play();
+  }
+  _play() {
+    if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; }
+    this.playing = true; this.lastTime = 0;
+    const tick = ts => {
+      if (!this.playing) return;
+      if (!this.lastTime) this.lastTime = ts;
+      if (ts - this.lastTime >= this.frameDur) {
+        this.lastTime = ts;
+        this._drawFrame(this.frameIdx);
+        this.frameIdx += this.direction;
+        if (this.frameIdx >= this.frames.length) { this.frameIdx = this.frames.length - 1; this.playing = false; return; }
+        if (this.frameIdx < 0) { this.frameIdx = 0; this.playing = false; this._clearCanvas(); return; }
+      }
+      this.rafId = requestAnimationFrame(tick);
+    };
+    this.rafId = requestAnimationFrame(tick);
+  }
+  _drawFrame(idx) {
+    if (!this.frames[idx]) return;
+    const { imageData, dims } = this.frames[idx];
+    const off = new OffscreenCanvas(dims.width, dims.height);
+    off.getContext('2d').putImageData(imageData, 0, 0);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(off, 0, 0, this.canvas.width, this.canvas.height);
+  }
+  _clearCanvas() { this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }
+  async _load() {
+    if (this.loaded || this.loading) return;
+    this.loading = true;
+    await loadGifuct();
+    try {
+      const buf = await (await fetch(this.gifSrc)).arrayBuffer();
+      const gif = window.parseGIF(buf);
+      const raw = window.decompressFrames(gif, true);
+      const w = gif.lsd.width, h = gif.lsd.height;
+      const prev = new OffscreenCanvas(w, h), prevCtx = prev.getContext('2d');
+      for (const f of raw) {
+        const fc = new OffscreenCanvas(w, h), fCtx = fc.getContext('2d');
+        fCtx.drawImage(prev, 0, 0);
+        const tmp = new OffscreenCanvas(f.dims.width, f.dims.height);
+        tmp.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(f.patch), f.dims.width, f.dims.height), 0, 0);
+        fCtx.drawImage(tmp, f.dims.left, f.dims.top);
+        this.frames.push({ imageData: fCtx.getImageData(0, 0, w, h), dims: { width: w, height: h } });
+        if (f.disposalType === 2) prevCtx.clearRect(f.dims.left, f.dims.top, f.dims.width, f.dims.height);
+        else prevCtx.drawImage(fc, 0, 0);
+      }
+      this.loaded = true;
+    } catch(e) { console.warn('GIF error:', this.gifSrc, e); }
+    this.loading = false;
+  }
+  syncSize() {
+    const w = this.canvas.offsetWidth, h = this.canvas.offsetHeight;
+    if (w && h) { this.canvas.width = w; this.canvas.height = h; }
+  }
+}
+
+/* ════════════════════════════════════════
+   BACKGROUND PAINTERS
+════════════════════════════════════════ */
+const S = 3;
+
+function drawSkyBg(c) {
+  const ctx = c.getContext('2d'), W = c.width, H = c.height;
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#0d1a2e'); g.addColorStop(0.6,'#1a2a45'); g.addColorStop(1,'#2a3a55');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#ffffffaa';
+  [[20,15],[45,8],[80,22],[110,6],[140,18],[170,10],[200,25],[30,40],[60,35],[100,48],[150,32],[185,44],[210,15],[240,38]]
+    .forEach(([x,y]) => ctx.fillRect(x%W, y%(H/2), S-1, S-1));
+  ctx.fillStyle='#e8dfc0'; ctx.fillRect(W-60,20,S*6,S*6);
+  ctx.fillStyle='#1a2a45'; ctx.fillRect(W-54,20,S*4,S*4);
+  ctx.fillStyle='#0d1220'; ctx.fillRect(0,H*0.72,W,H);
+  [[20,H*0.6],[80,H*0.55],[200,H*0.58],[280,H*0.62]].forEach(([x,y]) => {
+    ctx.fillStyle='#0a0f1a'; ctx.fillRect(x,y,S*2,H*0.72-y); ctx.fillRect(x-S*3,y-S*4,S*8,S*6);
+  });
+}
+
+function drawGameBg(c) {
+  const ctx = c.getContext('2d'), W = c.width, H = c.height;
+  ctx.fillStyle='#16121e'; ctx.fillRect(0,0,W,H);
+  for(let r=0;r<Math.ceil(H/(S*6));r++) for(let col=0;col<Math.ceil(W/(S*8));col++) {
+    ctx.strokeStyle='rgba(80,60,100,0.25)'; ctx.lineWidth=1;
+    ctx.strokeRect(col*S*8+(r%2)*S*4, r*S*6, S*8, S*6);
+  }
+  [[30,H*0.3],[W-50,H*0.4],[W/2,H*0.2]].forEach(([x,y]) => {
+    ctx.fillStyle='#3a2810'; ctx.fillRect(x,y,S*2,S*4);
+    ctx.fillStyle='#4a3010'; ctx.fillRect(x-S,y-S*2,S*4,S*3);
+    ctx.fillStyle='rgba(180,90,20,0.12)'; ctx.fillRect(x-S*4,y-S*4,S*10,S*8);
+  });
+  ctx.fillStyle='#0e0b14'; ctx.fillRect(W/2-S*5,H*0.55,S*10,H*0.45);
+  ctx.strokeStyle='#2a2040'; ctx.lineWidth=2; ctx.strokeRect(W/2-S*5,H*0.55,S*10,H*0.45);
+}
+
+function drawVidBg(c) {
+  const ctx = c.getContext('2d'), W = c.width, H = c.height;
+  const g = ctx.createLinearGradient(0,0,0,H*0.6);
+  g.addColorStop(0,'#2a1a30'); g.addColorStop(0.5,'#4a2a20'); g.addColorStop(1,'#6a3a25');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H*0.65);
+  ctx.fillStyle='#2a3820'; ctx.fillRect(0,H*0.65,W,S*4);
+  ctx.fillStyle='#3a2a18'; ctx.fillRect(0,H*0.65+S*4,W,S*6);
+  ctx.fillStyle='#2a1e10'; ctx.fillRect(0,H*0.65+S*10,W,H);
+  ctx.fillStyle='#1a1008'; ctx.fillRect(S*8,H*0.38,S*3,H*0.27);
+  ctx.fillStyle='#1e2a10'; ctx.fillRect(S*4,H*0.2,S*11,H*0.22);
+  ctx.fillStyle='#3a3020'; ctx.fillRect(W-S*10,S*4,S*7,S*7);
+  ctx.strokeStyle='#4a4030'; ctx.lineWidth=1.5; ctx.strokeRect(W-S*10,S*4,S*7,S*7);
+  [[60,H*0.8],[120,H*0.85],[200,H*0.78],[250,H*0.88]].forEach(([x,y]) => { ctx.fillStyle='#204060'; ctx.fillRect(x,y,S*2,S*2); });
+}
+
+function drawAnimBg(c) {
+  const ctx = c.getContext('2d'), W = c.width, H = c.height;
+  ctx.fillStyle='#111008'; ctx.fillRect(0,0,W,H);
+  for(let x=S*4;x<W-S*4;x+=S*8) {
+    ctx.fillStyle='#2a2418'; ctx.fillRect(x,S*2,S*4,S*3); ctx.fillRect(x,H-S*5,S*4,S*3);
+  }
+  const fw=(W-S*4)/3;
+  for(let i=0;i<3;i++) {
+    const fx=S*2+i*fw;
+    ctx.fillStyle='#1e1a10'; ctx.fillRect(fx+S,S*7,fw-S*2,H-S*14);
+    ctx.strokeStyle='#3a3020'; ctx.lineWidth=1; ctx.strokeRect(fx+S,S*7,fw-S*2,H-S*14);
+    const sfx=fx+fw/2, sfy=S*10;
+    ctx.fillStyle='#2a2418';
+    ctx.fillRect(sfx-S,sfy,S*2,S*2); ctx.fillRect(sfx-S,sfy+S*2,S*2,S*3);
+    ctx.fillRect(sfx-S*3,sfy+S*2,S*2,S*2); ctx.fillRect(sfx+S,sfy+S*2,S*2,S*2);
+    ctx.fillRect(sfx-S,sfy+S*5,S,S*3); ctx.fillRect(sfx,sfy+S*5,S,S*3);
+  }
+}
+
+/* ════════════════════════════════════════
+   SETUP
+════════════════════════════════════════ */
+const WINDOWS = [
+  { wrapId:'win-sky',  bgId:'bg-sky',  animId:'anim-sky',  bgDraw:drawSkyBg,  gifSrc:null, fps:12 },
+  { wrapId:'win-game', bgId:'bg-game', animId:'anim-game', bgDraw:drawGameBg, gifSrc:null, fps:12 },
+  { wrapId:'win-vid',  bgId:'bg-vid',  animId:'anim-vid',  bgDraw:drawVidBg,  gifSrc:null, fps:12 },
+  { wrapId:'win-anim', bgId:'bg-anim', animId:'anim-anim', bgDraw:drawAnimBg, gifSrc:null, fps:12 },
+];
+const controllers = [];
+
+function initAll() {
+  WINDOWS.forEach(cfg => {
+    const bgC = document.getElementById(cfg.bgId);
+    bgC.width  = bgC.offsetWidth  || bgC.parentElement.offsetWidth;
+    bgC.height = bgC.offsetHeight || bgC.parentElement.offsetHeight;
+    cfg.bgDraw(bgC);
+    const ctrl = new WinAnim({ wrapId:cfg.wrapId, animId:cfg.animId, gifSrc:cfg.gifSrc, fps:cfg.fps });
+    ctrl.syncSize();
+    controllers.push(ctrl);
+  });
+}
+
+/* ════════════════════════════════════════
+   NAVIGATION
+   Regla única: el curtain SIEMPRE se mueve
+   con requestAnimationFrame doble para que
+   el browser garantice dos frames distintos
+   (frame 1 = posición inicial sin transición,
+    frame 2 = posición final con transición).
+   Nunca se tocan clases CSS en el curtain.
+════════════════════════════════════════ */
+
+const curtain  = document.getElementById('curtain');
+const btnAbout = document.getElementById('btn-about');
+const navAbout = document.getElementById('nav-about');
+
+function wraps() { return document.querySelectorAll('.win-wrap'); }
+
+/* Mueve el curtain desde `from` hasta `to` y navega.
+   getBoundingClientRect() fuerza un reflow real entre los dos estados,
+   garantizando que el browser los trate como frames separados incluso
+   en iframes o contextos con throttling (como Neocities). */
+function curtainGo(fromTransform, toTransform, href) {
+  curtain.style.transition    = 'none';
+  curtain.style.transform     = fromTransform;
+  curtain.style.pointerEvents = 'all';
+  curtain.getBoundingClientRect(); // 🔑 reflow forzado — separa los dos estados
+  curtain.style.transition = 'transform 0.65s cubic-bezier(0.76, 0, 0.24, 1)';
+  curtain.style.transform  = toTransform;
+  setTimeout(() => { window.location.href = href; }, 720);
+}
+
+/* Revela el curtain al cargar: lo posiciona cubriendo la pantalla
+   y lo desliza fuera. getBoundingClientRect() es el separador clave. */
+function curtainReveal(coverTransform, exitTransform, onDone) {
+  curtain.style.transition    = 'none';
+  curtain.style.transform     = coverTransform;
+  curtain.style.pointerEvents = 'all';
+  curtain.getBoundingClientRect(); // 🔑 reflow forzado
+  curtain.style.transition    = 'transform 0.65s cubic-bezier(0.76, 0, 0.24, 1)';
+  curtain.style.transform     = exitTransform;
+  curtain.style.pointerEvents = 'none';
+  if (onDone) setTimeout(onDone, 400);
+}
+
+/* ── about → sube desde abajo ── */
+function goToAbout() {
+  wraps().forEach((el, i) => setTimeout(() => el.classList.add('win-exit'), i * 80));
+  curtainGo('translateY(100%)', 'translateY(0%)', 'about.html');
+  sessionStorage.setItem('toAbout', '1');
+}
+btnAbout.addEventListener('click', goToAbout);
+navAbout.addEventListener('click', goToAbout);
+
+/* ── music → entra desde la derecha ── */
+function goToMusic() {
+  wraps().forEach((el, i) => setTimeout(() => el.classList.add('win-exit-right'), i * 80));
+  curtainGo('translateX(100%)', 'translateX(0%)', 'musica.html');
+  sessionStorage.setItem('toMusic', '1');
+}
+navMusic.addEventListener('click', goToMusic);
+
+/* ════════════════════════════════════════
+   PAGE LOAD
+════════════════════════════════════════ */
+let pageInitDone = false;
+
+function runPageInit() {
+  if (!pageInitDone) { initAll(); pageInitDone = true; }
+
+  requestAnimationFrame(() => {
+    document.querySelector('header').classList.add('hdr-entered');
+  });
+
+  const fromAbout = sessionStorage.getItem('fromAbout');
+  const fromMusic = sessionStorage.getItem('fromMusic');
+
+  function enterWindows(prepClass) {
+    wraps().forEach(el => { if (prepClass) el.classList.add(prepClass); });
+    setTimeout(() => {
+      wraps().forEach((el, i) => {
+        setTimeout(() => {
+          if (prepClass) el.classList.remove(prepClass);
+          el.classList.add('win-entered');
+        }, i * 120);
+      });
+    }, 200);
+  }
+
+  if (fromAbout) {
+    sessionStorage.removeItem('fromAbout');
+    // curtain viene de arriba (about estaba arriba), sale hacia abajo
+    curtainReveal('translateY(0%)', 'translateY(100%)');
+    enterWindows('win-enter-below');
+
+  } else if (fromMusic) {
+    sessionStorage.removeItem('fromMusic');
+    // curtain viene de la izquierda, sale hacia la izquierda
+    curtainReveal('translateX(0%)', 'translateX(-100%)');
+    enterWindows('win-enter-right');
+
+  } else {
+    // primera visita o recarga directa: sin curtain
+    curtain.style.transition = 'none';
+    curtain.style.transform  = 'translateY(100%)';
+    curtain.style.pointerEvents = 'none';
+    wraps().forEach((el, i) => {
+      setTimeout(() => el.classList.add('win-entered'), 200 + i * 160);
+    });
+  }
+}
+
+window.addEventListener('load', runPageInit);
+window.addEventListener('pageshow', e => { if (e.persisted) runPageInit(); });
+
+window.addEventListener('resize', () => {
+  WINDOWS.forEach(cfg => {
+    const bgC = document.getElementById(cfg.bgId);
+    bgC.width = bgC.offsetWidth; bgC.height = bgC.offsetHeight;
+    cfg.bgDraw(bgC);
+  });
+  controllers.forEach(c => c.syncSize());
+});
+</script>
+</body>
+</html>

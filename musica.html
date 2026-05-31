@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✦ música ✦</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #ede9e0;
+  --bg2:       #e4dfd3;
+  --bg3:       #d8d2c4;
+  --win-bg:    #f5f2eb;
+  --border:    #b0a688;
+  --border-dk: #8c7f60;
+  --title-c:   #5c5036;
+  --text:      #38301f;
+  --muted:     #8a7d62;
+  --accent:    #c4916a;
+  --warm:      #c4845a;
+}
+
+body.dark {
+  --bg:        #1e1a14;
+  --bg2:       #2a2418;
+  --bg3:       #1a1510;
+  --win-bg:    #242018;
+  --border:    #4a3e28;
+  --border-dk: #6a5a3a;
+  --title-c:   #c8b890;
+  --text:      #e8dfc8;
+  --muted:     #8a7d62;
+  --accent:    #c4916a;
+  --warm:      #c4845a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='%23b0a688' fill-opacity='0.2'/%3E%3C/svg%3E");
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  transition: background-color 0.6s ease, color 0.6s ease;
+}
+
+/* ── CURTAIN ─── */
+#curtain {
+  position: fixed;
+  left: 0; right: 0;
+  height: 100vh;
+  background: linear-gradient(to right, #1a1218, #221520);
+  z-index: 100;
+  pointer-events: none;
+  bottom: 0;
+  transform: translateX(0%);
+  transition: transform 0.65s cubic-bezier(0.76, 0, 0.24, 1);
+}
+#curtain.reveal-right { transform: translateX(100%); pointer-events: none; }
+
+/* ── MUSIC SECTION ─── */
+#section-music {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 80px 40px 60px;
+}
+
+.music-inner {
+  max-width: 700px;
+  width: 100%;
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.7s cubic-bezier(0.34, 1.2, 0.64, 1),
+              transform 0.7s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.music-inner.music-entered { opacity: 1; transform: translateX(0); }
+
+.music-tag {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.5s 0.2s ease, transform 0.5s 0.2s ease;
+}
+.music-inner.music-entered .music-tag { opacity: 1; transform: translateX(0); }
+
+.music-title {
+  font-family: 'Silkscreen', monospace;
+  font-size: clamp(22px, 4vw, 36px);
+  letter-spacing: 2px;
+  line-height: 1.4;
+  margin-bottom: 10px;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.5s 0.3s ease, transform 0.5s 0.3s ease;
+}
+.music-inner.music-entered .music-title { opacity: 1; transform: translateX(0); }
+.music-title em { color: var(--accent); font-style: normal; }
+
+.wip-box {
+  border: 2px solid var(--border-dk);
+  background: var(--win-bg);
+  box-shadow: 6px 6px 0 var(--border-dk);
+  padding: 32px 28px;
+  margin: 32px 0;
+  text-align: center;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.6s 0.4s ease, transform 0.6s 0.4s ease,
+              background 0.6s, border-color 0.6s;
+}
+.music-inner.music-entered .wip-box { opacity: 1; transform: translateX(0); }
+
+.wip-label {
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.wip-status {
+  font-family: 'Silkscreen', monospace;
+  font-size: clamp(20px, 5vw, 38px);
+  letter-spacing: 4px;
+  color: var(--accent);
+  line-height: 1.5;
+}
+.wip-status::after { content: '_'; animation: blink 1s step-end infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+.wip-notes {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  font-size: 20px;
+}
+.wip-note {
+  color: var(--accent);
+  opacity: 0.5;
+  animation: noteBob 2s ease-in-out infinite;
+}
+.wip-note:nth-child(2) { animation-delay: 0.3s; }
+.wip-note:nth-child(3) { animation-delay: 0.6s; }
+.wip-note:nth-child(4) { animation-delay: 0.9s; }
+@keyframes noteBob {
+  0%,100% { transform: translateY(0); opacity: 0.5; }
+  50%      { transform: translateY(-7px); opacity: 0.9; }
+}
+
+/* ── GIF AREA ─── */
+.gif-area {
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.6s 0.55s ease, transform 0.6s 0.55s ease;
+}
+.music-inner.music-entered .gif-area { opacity: 1; transform: translateX(0); }
+
+.gif-frame {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+}
+.gif-frame img {
+  width: 100%;
+  display: block;
+  mix-blend-mode: multiply;
+}
+body.dark .gif-frame img { mix-blend-mode: screen; }
+
+.gif-caption {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.btn-back {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  background: transparent;
+  border: 1.5px solid var(--border);
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-top: 32px;
+  display: inline-block;
+  opacity: 0;
+  transition: opacity 0.5s 0.7s ease, color 0.2s, border-color 0.2s;
+}
+.music-inner.music-entered .btn-back { opacity: 1; }
+.btn-back:hover { color: var(--text); border-color: var(--border-dk); }
+
+#music-footer {
+  background: var(--bg3);
+  border-top: 2px solid var(--border-dk);
+  padding: 18px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.footer-copy {
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--title-c);
+  line-height: 1.8;
+  text-align: center;
+}
+.footer-copy span { color: var(--accent); }
+
+@media (max-width: 600px) {
+  #section-music { padding: 40px 20px 40px; }
+}
+</style>
+</head>
+<body>
+
+<div id="curtain"></div>
+
+<section id="section-music">
+  <div class="music-inner" id="music-inner">
+
+    <p class="music-tag">— en proceso —</p>
+    <h2 class="music-title">mi <em>música</em></h2>
+
+    <div class="wip-box">
+      <p class="wip-label">estado del proyecto</p>
+      <p class="wip-status">en proceso</p>
+      <div class="wip-notes">
+        <span class="wip-note">♩</span>
+        <span class="wip-note">♪</span>
+        <span class="wip-note">♫</span>
+        <span class="wip-note">♬</span>
+      </div>
+    </div>
+
+    <div class="gif-area">
+      <div class="gif-frame">
+        <img src="scar.gif" alt="scar gif">
+      </div>
+      <p class="gif-caption">✦ scar ✦</p>
+    </div>
+
+    <button class="btn-back" id="btn-back">← volver a la galería</button>
+
+  </div>
+</section>
+
+<footer id="music-footer">
+  <div class="footer-copy">
+    ✦ hecho con <span>amor</span> ·
+    <a href="https://neocities.org" target="_blank" style="color:var(--accent);text-decoration:none;">neocities</a>
+    ✦
+  </div>
+</footer>
+
+<script>
+/* dark mode — sync with index preference */
+if (localStorage.getItem('darkMode') === '1') {
+  document.body.classList.add('dark');
+}
+
+const curtain = document.getElementById('curtain');
+
+function goBack() {
+  curtain.style.transition    = 'none';
+  curtain.style.transform     = 'translateX(-100%)';
+  curtain.style.pointerEvents = 'all';
+  curtain.getBoundingClientRect(); // 🔑 reflow forzado
+  curtain.style.transition = 'transform 0.65s cubic-bezier(0.76, 0, 0.24, 1)';
+  curtain.style.transform  = 'translateX(0%)';
+  sessionStorage.setItem('fromMusic', '1');
+  setTimeout(() => { window.location.href = 'index.html'; }, 720);
+}
+
+document.getElementById('btn-back').addEventListener('click', goBack);
+
+function startCurtainReveal() {
+  curtain.style.transition    = 'none';
+  curtain.style.transform     = 'translateX(0%)';
+  curtain.style.pointerEvents = 'all';
+  curtain.getBoundingClientRect(); // 🔑 reflow forzado
+  curtain.style.transition    = 'transform 0.65s cubic-bezier(0.76, 0, 0.24, 1)';
+  curtain.style.transform     = 'translateX(100%)';
+  curtain.style.pointerEvents = 'none';
+  setTimeout(() => {
+    document.getElementById('music-inner').classList.add('music-entered');
+  }, 300);
+}
+
+window.addEventListener('load', startCurtainReveal);
+window.addEventListener('pageshow', e => { if (e.persisted) { document.getElementById('music-inner').classList.remove('music-entered'); startCurtainReveal(); } });
+</script>
+</body>
+</html>

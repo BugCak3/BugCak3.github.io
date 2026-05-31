@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✦ about me ✦</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #ede9e0;
+  --bg2:       #2a2418;
+  --bg3:       #1a1510;
+  --win-bg:    #f5f2eb;
+  --border:    #4a3e28;
+  --border-dk: #6a5a3a;
+  --title-c:   #c8b890;
+  --text:      #e8dfc8;
+  --muted:     #8a7d62;
+  --accent:    #c4916a;
+  --warm:      #c4845a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: #1e1a14;
+  background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='%23ffffff' fill-opacity='0.03'/%3E%3C/svg%3E");
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* ── CURTAIN OVERLAY ─── */
+#curtain {
+  position: fixed;
+  left: 0; right: 0;
+  height: 100vh;
+  bottom: 0;
+  z-index: 100;
+  pointer-events: none;
+  background: linear-gradient(to bottom, #1a1510 0%, #2a1e14 100%);
+  transform: translateY(0%);
+  transition: transform 0.65s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ── ABOUT SECTION ─── */
+#section-about {
+  flex: 1;
+  background: #1e1a14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+}
+
+.about-inner {
+  max-width: 860px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 60px;
+  align-items: start;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.34, 1.2, 0.64, 1),
+              transform 0.7s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.about-inner.about-entered { opacity: 1; transform: translateY(0); }
+
+.about-photo-wrap {
+  opacity: 0;
+  transform: scale(0.9) rotate(-2deg);
+  transition: opacity 0.6s 0.15s cubic-bezier(0.34, 1.3, 0.64, 1),
+              transform 0.6s 0.15s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.about-inner.about-entered .about-photo-wrap {
+  opacity: 1;
+  transform: scale(1) rotate(-1.5deg);
+}
+.about-photo-frame {
+  border: 3px solid var(--border-dk);
+  box-shadow: 5px 5px 0 var(--border-dk);
+  background: var(--bg3);
+  padding: 10px 10px 32px;
+  position: relative;
+}
+.about-photo-frame img,
+.about-photo-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: block;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+.about-photo-placeholder {
+  background: var(--bg2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.about-photo-caption {
+  font-family: 'Silkscreen', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 8px;
+}
+
+.about-text { padding-top: 8px; }
+
+.lang-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.5s 0.15s ease, transform 0.5s 0.15s ease;
+}
+.about-inner.about-entered .lang-row { opacity: 1; transform: translateX(0); }
+
+.btn-lang {
+  font-family: 'Silkscreen', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  user-select: none;
+}
+.btn-lang:hover { color: var(--text); border-color: var(--border-dk); }
+.btn-lang.active {
+  color: var(--win-bg);
+  background: var(--warm);
+  border-color: #9e5e30;
+  box-shadow: 2px 2px 0 #9e5e30;
+}
+
+.about-tag {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.5s 0.25s ease, transform 0.5s 0.25s ease;
+}
+.about-inner.about-entered .about-tag { opacity: 1; transform: translateX(0); }
+
+.about-name {
+  font-family: 'Silkscreen', monospace;
+  font-size: clamp(18px, 3vw, 28px);
+  letter-spacing: 2px;
+  line-height: 1.4;
+  margin-bottom: 22px;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.5s 0.35s ease, transform 0.5s 0.35s ease;
+}
+.about-inner.about-entered .about-name { opacity: 1; transform: translateX(0); }
+.about-name em { color: var(--accent); font-style: normal; }
+
+.about-bio {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--text);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s 0.45s ease, transform 0.6s 0.45s ease;
+}
+.about-inner.about-entered .about-bio { opacity: 1; transform: translateY(0); }
+.about-bio p { margin-bottom: 14px; }
+.about-bio p:last-child { margin-bottom: 0; }
+
+.bio-content { transition: opacity 0.3s ease, transform 0.3s ease; }
+.bio-content.fade-out { opacity: 0; transform: translateY(4px); }
+.bio-content.fade-in { animation: bioFadeIn 0.35s ease forwards; }
+@keyframes bioFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.about-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s 0.6s ease, transform 0.5s 0.6s ease;
+}
+.about-inner.about-entered .about-tags-row { opacity: 1; transform: translateY(0); }
+.about-pill {
+  font-family: 'Silkscreen', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 5px 10px;
+  border: 1.5px solid var(--border-dk);
+  background: var(--bg2);
+  color: var(--title-c);
+}
+
+.btn-back {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  background: transparent;
+  border: 1.5px solid var(--border);
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-top: 32px;
+  display: inline-block;
+  opacity: 0;
+  transition: opacity 0.5s 0.75s ease, color 0.2s, border-color 0.2s;
+}
+.about-inner.about-entered .btn-back { opacity: 1; }
+.btn-back:hover { color: var(--text); border-color: var(--border-dk); }
+
+#about-footer {
+  background: #13110d;
+  border-top: 2px solid var(--border-dk);
+  padding: 18px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.footer-copy {
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--title-c);
+  line-height: 1.8;
+  text-align: center;
+}
+.footer-copy span { color: var(--accent); }
+
+@media (max-width: 600px) {
+  .about-inner { grid-template-columns: 1fr; gap: 32px; }
+  .about-photo-wrap { max-width: 200px; margin: 0 auto; }
+  #section-about { padding: 40px 20px; }
+}
+</style>
+</head>
+<body>
+
+<div id="curtain"></div>
+
+<section id="section-about">
+  <div class="about-inner" id="about-inner">
+
+    <div class="about-photo-wrap">
+      <div class="about-photo-frame">
+        <canvas id="photo-placeholder" class="about-photo-placeholder" width="200" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="about-text">
+      <div class="lang-row">
+        <button class="btn-lang active" id="btn-es" onclick="setLang('es')">ES</button>
+        <button class="btn-lang" id="btn-en" onclick="setLang('en')">EN</button>
+      </div>
+
+      <p class="about-tag" id="about-tag">— about me —</p>
+      <h2 class="about-name" id="about-name">hola, soy <em>BugCak3</em></h2>
+
+      <div class="about-bio">
+        <div class="bio-content" id="bio-content"></div>
+      </div>
+
+      <div class="about-tags-row">
+        <span class="about-pill">pixel art</span>
+        <span class="about-pill">animation</span>
+        <span class="about-pill">sky</span>
+        <span class="about-pill">terraria</span>
+        <span class="about-pill">minecraft</span>
+        <span class="about-pill">gamedev</span>
+      </div>
+
+      <button class="btn-back" id="btn-back">← volver a la galería</button>
+    </div>
+  </div>
+</section>
+
+<footer id="about-footer">
+  <div class="footer-copy">
+    ✦ hecho con <span>amor</span> · <a href="https://neocities.org" target="_blank" style="color:var(--accent);text-decoration:none;">neocities</a> ✦
+  </div>
+</footer>
+
+<script>
+const CONTENT = {
+  es: {
+    tag:  '— sobre mí —',
+    name: 'hola, soy <em>BugCak3</em>',
+    bio: [
+      'artista de pixel art y creador de piezas musicales. me gusta dibujar personajes bonitos y traer proyectos a la vida.',
+      'Amo los videojuegos que me permiten personalizar mi personaje. también estoy trabajando en mi propio proyecto — una historia que llevo desde hace tiempo.',
+      'esta galería es mi pequeño espacio en internet donde guardo todo lo que hago con amor (Y que no me bajen la calidad).'
+    ],
+    back: '← volver a la galería'
+  },
+  en: {
+    tag:  '— about me —',
+    name: 'hi, I\'m <em>BugCak3</em>',
+    bio: [
+      'I\'m a pixel artist and music creator. I love drawing cute characters and bringing projects to life.',
+      'I love video games that let me customize my character. I\'m also working on my own project—a story I\'ve been developing for a while.',
+      'This gallery is my little corner of the internet where I keep everything I create with love (so social media doesn\'t lower the quality).'
+    ],
+    back: '← back to gallery'
+  }
+};
+
+let currentLang = 'es';
+
+function renderBio(lang) {
+  document.getElementById('bio-content').innerHTML =
+    CONTENT[lang].bio.map(p => `<p>${p}</p>`).join('');
+}
+
+function setLang(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  const c = CONTENT[lang];
+  const bio = document.getElementById('bio-content');
+  bio.classList.add('fade-out');
+  setTimeout(() => {
+    document.getElementById('about-tag').textContent = c.tag;
+    document.getElementById('about-name').innerHTML = c.name;
+    document.getElementById('btn-back').textContent = c.back;
+    renderBio(lang);
+    bio.classList.remove('fade-out');
+    bio.classList.add('fade-in');
+    setTimeout(() => bio.classList.remove('fade-in'), 400);
+  }, 300);
+}
+
+function drawPhotoPlaceholder() {
+  const c = document.getElementById('photo-placeholder');
+  if (!c) return;
+  c.width = 200; c.height = 200;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#2a2418'; ctx.fillRect(0,0,200,200);
+  const ps = 5;
+  const draw = (x,y,color) => { ctx.fillStyle=color; ctx.fillRect(x*ps,y*ps,ps,ps); };
+  [[7,4],[8,4],[9,4],[10,4],[7,5],[10,5],[7,6],[8,6],[9,6],[10,6]].forEach(([x,y])=>draw(x,y,'#c49878'));
+  draw(8,5,'#3d2a1a'); draw(9,5,'#3d2a1a');
+  [[7,3],[8,3],[9,3],[10,3],[6,4],[11,4]].forEach(([x,y])=>draw(x,y,'#5a3820'));
+  [[7,7],[8,7],[9,7],[10,7],[7,8],[8,8],[9,8],[10,8],[7,9],[8,9],[9,9],[10,9]].forEach(([x,y])=>draw(x,y,'#c4916a'));
+  [[5,7],[6,7],[11,7],[12,7],[5,8],[6,8],[11,8],[12,8]].forEach(([x,y])=>draw(x,y,'#c4916a'));
+  [[7,10],[8,10],[9,10],[10,10],[7,11],[8,11],[9,11],[10,11]].forEach(([x,y])=>draw(x,y,'#8c7f60'));
+  draw(3,3,'#f0d040'); draw(14,5,'#c49ab5'); draw(13,2,'#9badc4');
+  ctx.fillStyle='#6a5a3a';
+  ctx.font='bold 9px monospace';
+  ctx.textAlign='center';
+  ctx.fillText('BugCak3',100,185);
+}
+
+/* navigation */
+const curtain = document.getElementById('curtain');
+
+function curtainGo(fromTransform, toTransform, href, ssKey) {
+  curtain.style.transition    = 'none';
+  curtain.style.transform     = fromTransform;
+  curtain.style.pointerEvents = 'all';
+  curtain.getBoundingClientRect(); // 🔑 reflow forzado
+  curtain.style.transition = 'transform 0.65s cubic-bezier(0.76, 0, 0.24, 1)';
+  curtain.style.transform  = toTransform;
+  setTimeout(() => {
+    if (ssKey) sessionStorage.setItem(ssKey, '1');
+    window.location.href = href;
+  }, 720);
+}
+
+function goBack() {
+  curtainGo('translateY(-100%)', 'translateY(0%)', 'index.html', 'fromAbout');
+}
+document.getElementById('btn-back').addEventListener('click', goBack);
+
+function startCurtainReveal() {
+  curtain.style.transition    = 'none';
+  curtain.style.transform     = 'translateY(0%)';
+  curtain.style.pointerEvents = 'all';
+  curtain.getBoundingClientRect(); // 🔑 reflow forzado
+  curtain.style.transition    = 'transform 0.65s cubic-bezier(0.76, 0, 0.24, 1)';
+  curtain.style.transform     = 'translateY(-100%)';
+  curtain.style.pointerEvents = 'none';
+  setTimeout(() => {
+    document.getElementById('about-inner').classList.add('about-entered');
+  }, 350);
+}
+
+window.addEventListener('load', () => {
+  drawPhotoPlaceholder();
+  const c = CONTENT.es;
+  document.getElementById('about-tag').textContent = c.tag;
+  document.getElementById('about-name').innerHTML  = c.name;
+  document.getElementById('btn-back').textContent  = c.back;
+  renderBio('es');
+  startCurtainReveal();
+});
+
+window.addEventListener('pageshow', e => {
+  if (e.persisted) {
+    // bfcache: resetea el contenido y vuelve a revelar
+    document.getElementById('about-inner').classList.remove('about-entered');
+    startCurtainReveal();
+  }
+});
+</script>
+</body>
+</html>
