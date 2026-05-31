@@ -365,6 +365,68 @@ h1 em { color: var(--accent); font-style: normal; }
 }
 .win-wrap:hover .anim-canvas { opacity: 1; }
 
+/* fx-canvas: partículas encima de todo */
+.fx-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  display: block;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.win-wrap:hover .fx-canvas { opacity: 1; }
+
+/* film strip overlay para "varios" */
+.film-strip {
+  position: absolute; inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  overflow: hidden;
+}
+.win-wrap:hover .film-strip { opacity: 1; }
+.film-strip::before,
+.film-strip::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 26px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #0d0a06 0px,   #0d0a06 5px,
+    transparent    5px,  transparent 10px,
+    #0d0a06 10px,  #0d0a06 15px,
+    transparent    15px, transparent 20px
+  );
+}
+.film-strip::before { left: 0;  border-right: 2px solid #3a2a10; }
+.film-strip::after  { right: 0; border-left:  2px solid #3a2a10; }
+.film-strip .scan {
+  position: absolute;
+  left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(to right, transparent, rgba(255,220,150,0.22), transparent);
+  animation: scanSweep 2.4s linear infinite;
+  pointer-events: none;
+}
+@keyframes scanSweep {
+  0%   { top: -4px; opacity: 0.8; }
+  80%  { opacity: 0.8; }
+  100% { top: 100%; opacity: 0; }
+}
+.film-strip .scratch {
+  position: absolute;
+  width: 1px;
+  background: rgba(255,230,160,0.25);
+  animation: scratchFlicker 0.15s step-end infinite;
+}
+@keyframes scratchFlicker {
+  0%,100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+
 .win-label {
   font-family: 'Silkscreen', monospace;
   font-size: 13px;
@@ -485,6 +547,7 @@ h1 em { color: var(--accent); font-style: normal; }
         <div class="win-screen">
           <canvas class="bg-canvas" id="bg-sky"></canvas>
           <canvas class="anim-canvas" id="anim-sky"></canvas>
+          <canvas class="fx-canvas" id="fx-sky"></canvas>
         </div>
       </div>
       <p class="win-label">sky</p>
@@ -498,6 +561,7 @@ h1 em { color: var(--accent); font-style: normal; }
         <div class="win-screen">
           <canvas class="bg-canvas" id="bg-game"></canvas>
           <canvas class="anim-canvas" id="anim-game"></canvas>
+          <canvas class="fx-canvas" id="fx-game"></canvas>
         </div>
       </div>
       <p class="win-label">mi proyecto</p>
@@ -511,6 +575,7 @@ h1 em { color: var(--accent); font-style: normal; }
         <div class="win-screen">
           <canvas class="bg-canvas" id="bg-vid"></canvas>
           <canvas class="anim-canvas" id="anim-vid"></canvas>
+          <canvas class="fx-canvas" id="fx-vid"></canvas>
         </div>
       </div>
       <p class="win-label">fanart</p>
@@ -524,6 +589,10 @@ h1 em { color: var(--accent); font-style: normal; }
         <div class="win-screen">
           <canvas class="bg-canvas" id="bg-anim"></canvas>
           <canvas class="anim-canvas" id="anim-anim"></canvas>
+          <canvas class="fx-canvas" id="fx-anim"></canvas>
+          <div class="film-strip" id="film-strip">
+            <div class="scan"></div>
+          </div>
         </div>
       </div>
       <p class="win-label">varios</p>
@@ -907,6 +976,304 @@ function runPageInit() {
 
 window.addEventListener('load', runPageInit);
 window.addEventListener('pageshow', e => { if (e.persisted) runPageInit(); });
+
+/* ════════════════════════════════════════
+   EFECTOS DE PARTÍCULAS POR VENTANA
+════════════════════════════════════════ */
+
+/* ── utilidad: resize canvas fx ── */
+function syncFx(id) {
+  const c = document.getElementById(id);
+  if (!c) return c;
+  c.width  = c.offsetWidth  || c.parentElement.offsetWidth;
+  c.height = c.offsetHeight || c.parentElement.offsetHeight;
+  return c;
+}
+
+/* ══════════════════════════════
+   SKY — luz brillante + partículas de luz flotantes
+══════════════════════════════ */
+(function() {
+  const wrap = document.getElementById('win-sky');
+  const c    = document.getElementById('fx-sky');
+  if (!wrap || !c) return;
+
+  const particles = [];
+  let active = false, raf = null;
+
+  function spawn() {
+    const W = c.width, H = c.height;
+    particles.push({
+      x:     Math.random() * W,
+      y:     Math.random() * H,
+      r:     1 + Math.random() * 2.5,
+      vx:    (Math.random() - 0.5) * 0.5,
+      vy:    -0.4 - Math.random() * 0.8,
+      life:  0,
+      maxL:  60 + Math.random() * 80,
+      hue:   180 + Math.random() * 60,  // azul-celeste-blanco
+    });
+  }
+
+  function tick() {
+    if (!active) { clearFx(c); return; }
+    raf = requestAnimationFrame(tick);
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, c.width, c.height);
+
+    // brillo central
+    const gx = c.width * 0.5, gy = c.height * 0.35;
+    const gl = ctx.createRadialGradient(gx, gy, 0, gx, gy, c.width * 0.55);
+    gl.addColorStop(0,   'rgba(180,230,255,0.18)');
+    gl.addColorStop(0.4, 'rgba(120,180,255,0.07)');
+    gl.addColorStop(1,   'transparent');
+    ctx.fillStyle = gl;
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    // spawn y dibuja partículas
+    if (Math.random() < 0.35) spawn();
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.life++;
+      if (p.life > p.maxL) { particles.splice(i, 1); continue; }
+      const t   = p.life / p.maxL;
+      const alpha = t < 0.3 ? t / 0.3 : 1 - (t - 0.3) / 0.7;
+      const gp = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3);
+      gp.addColorStop(0,   `hsla(${p.hue},100%,95%,${alpha})`);
+      gp.addColorStop(0.4, `hsla(${p.hue},80%,75%,${alpha * 0.5})`);
+      gp.addColorStop(1,   'transparent');
+      ctx.fillStyle = gp;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+      ctx.fill();
+      // núcleo brillante
+      ctx.fillStyle = `hsla(${p.hue},100%,98%,${alpha})`;
+      ctx.fillRect(p.x - p.r * 0.5, p.y - p.r * 0.5, p.r, p.r);
+    }
+  }
+
+  function clearFx(cv) {
+    cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+    particles.length = 0;
+  }
+
+  wrap.addEventListener('mouseenter', () => {
+    syncFx('fx-sky');
+    active = true;
+    if (!raf) tick();
+  });
+  wrap.addEventListener('mouseleave', () => {
+    active = false;
+    raf = null;
+  });
+})();
+
+/* ══════════════════════════════
+   MI PROYECTO — hojas otoñales cayendo
+══════════════════════════════ */
+(function() {
+  const wrap = document.getElementById('win-game');
+  const c    = document.getElementById('fx-game');
+  if (!wrap || !c) return;
+
+  const leaves = [];
+  let active = false, raf = null;
+
+  const LEAF_COLORS = [
+    '#c4521a','#d4701a','#b83a0a','#e8922a',
+    '#c4391a','#a83010','#d4602a','#9e6030',
+  ];
+
+  function spawnLeaf() {
+    const W = c.width;
+    leaves.push({
+      x:    Math.random() * W,
+      y:    -8,
+      size: 4 + Math.random() * 5,
+      vx:   (Math.random() - 0.5) * 1.2,
+      vy:   0.8 + Math.random() * 1.2,
+      rot:  Math.random() * Math.PI * 2,
+      vrot: (Math.random() - 0.5) * 0.12,
+      sway: Math.random() * Math.PI * 2,
+      swayS: 0.04 + Math.random() * 0.04,
+      color: LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)],
+    });
+  }
+
+  function drawLeaf(ctx, x, y, size, rot, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.fillStyle = color;
+    // hoja pixel: rombo simple de 3x3 píxeles escalado
+    const s = size;
+    ctx.fillRect(-s*0.5, -s,     s, s*2);      // tronco vertical
+    ctx.fillRect(-s,     -s*0.3, s*2, s*0.6);  // ancho central
+    ctx.fillRect(-s*0.7, -s*0.7, s*1.4, s*0.4);
+    ctx.fillRect(-s*0.7,  s*0.3, s*1.4, s*0.4);
+    ctx.restore();
+  }
+
+  function tick() {
+    if (!active && leaves.length === 0) { clearFx(c); return; }
+    raf = requestAnimationFrame(tick);
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, c.width, c.height);
+
+    if (active && Math.random() < 0.18) spawnLeaf();
+
+    for (let i = leaves.length - 1; i >= 0; i--) {
+      const l = leaves[i];
+      l.sway += l.swayS;
+      l.x  += l.vx + Math.sin(l.sway) * 0.6;
+      l.y  += l.vy;
+      l.rot += l.vrot;
+      if (l.y > c.height + 10) { leaves.splice(i, 1); continue; }
+      drawLeaf(ctx, l.x, l.y, l.size, l.rot, l.color);
+    }
+  }
+
+  function clearFx(cv) { cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
+
+  wrap.addEventListener('mouseenter', () => {
+    syncFx('fx-game');
+    active = true;
+    if (!raf) tick();
+  });
+  wrap.addEventListener('mouseleave', () => {
+    active = false;
+    raf = null;
+  });
+})();
+
+/* ══════════════════════════════
+   FANART — píxeles emanantes tipo explosión de color
+══════════════════════════════ */
+(function() {
+  const wrap = document.getElementById('win-vid');
+  const c    = document.getElementById('fx-vid');
+  if (!wrap || !c) return;
+
+  const pixels = [];
+  let active = false, raf = null, mx = 0, my = 0;
+
+  const PX_COLORS = [
+    '#e87050','#d4605a','#c45090','#9850c4',
+    '#5070d4','#50b4c4','#50c490','#c4b450',
+  ];
+
+  function spawnBurst(x, y, n) {
+    for (let i = 0; i < n; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.5 + Math.random() * 2.5;
+      pixels.push({
+        x, y,
+        size: 2 + Math.floor(Math.random() * 4),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0,
+        maxL: 40 + Math.random() * 50,
+        color: PX_COLORS[Math.floor(Math.random() * PX_COLORS.length)],
+      });
+    }
+  }
+
+  function tick() {
+    if (!active && pixels.length === 0) { clearFx(c); return; }
+    raf = requestAnimationFrame(tick);
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, c.width, c.height);
+
+    // emisión continua desde posición del mouse
+    if (active && Math.random() < 0.6) spawnBurst(mx, my, 2);
+
+    for (let i = pixels.length - 1; i >= 0; i--) {
+      const p = pixels[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.04; // gravedad leve
+      p.life++;
+      if (p.life > p.maxL) { pixels.splice(i, 1); continue; }
+      const t = p.life / p.maxL;
+      const alpha = t < 0.2 ? t / 0.2 : 1 - (t - 0.2) / 0.8;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function clearFx(cv) { cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); pixels.length = 0; }
+
+  wrap.addEventListener('mouseenter', e => {
+    syncFx('fx-vid');
+    const r = c.getBoundingClientRect();
+    mx = e.clientX - r.left; my = e.clientY - r.top;
+    active = true;
+    spawnBurst(mx, my, 12); // burst inicial
+    if (!raf) tick();
+  });
+  wrap.addEventListener('mousemove', e => {
+    const r = c.getBoundingClientRect();
+    mx = e.clientX - r.left; my = e.clientY - r.top;
+  });
+  wrap.addEventListener('mouseleave', () => {
+    active = false;
+    raf = null;
+  });
+})();
+
+/* ══════════════════════════════
+   VARIOS — scratches animados del film strip
+   (el overlay CSS ya pone los bordes de película;
+    aquí añadimos scratches aleatorios)
+══════════════════════════════ */
+(function() {
+  const wrap  = document.getElementById('win-anim');
+  const strip = document.getElementById('film-strip');
+  if (!wrap || !strip) return;
+
+  const scratches = [];
+  let active = false;
+
+  function spawnScratch() {
+    const el = document.createElement('div');
+    el.className = 'scratch';
+    const H = wrap.querySelector('.win-screen').offsetHeight || 300;
+    const top  = Math.random() * H * 0.8;
+    const h    = 20 + Math.random() * 80;
+    const left = 28 + Math.random() * (wrap.offsetWidth - 56);
+    el.style.top    = top + 'px';
+    el.style.height = h + 'px';
+    el.style.left   = left + 'px';
+    strip.appendChild(el);
+    scratches.push(el);
+    // quitar después de un tiempo aleatorio
+    setTimeout(() => {
+      el.remove();
+      const idx = scratches.indexOf(el);
+      if (idx > -1) scratches.splice(idx, 1);
+    }, 100 + Math.random() * 400);
+  }
+
+  let interval = null;
+  wrap.addEventListener('mouseenter', () => {
+    active = true;
+    spawnScratch();
+    interval = setInterval(() => {
+      if (!active) return;
+      if (Math.random() < 0.5) spawnScratch();
+    }, 120);
+  });
+  wrap.addEventListener('mouseleave', () => {
+    active = false;
+    clearInterval(interval);
+    interval = null;
+    scratches.forEach(s => s.remove());
+    scratches.length = 0;
+  });
+})();
+
+
 
 window.addEventListener('resize', () => {
   WINDOWS.forEach(cfg => {
