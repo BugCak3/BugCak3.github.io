@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✦ sky · BugCak3 ✦</title>
+<script>if(localStorage.getItem('darkMode')==='1')document.documentElement.setAttribute('data-theme','dark');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky-deep:   #04080f;
+  --sky-mid:    #080d1a;
+  --sky-glow:   #0d1628;
+  --border:     #1e2d4a;
+  --border-dk:  #2a3e5e;
+  --title-c:    #8ab4e8;
+  --text:       #c8d8f0;
+  --muted:      #4a6080;
+  --accent:     #6aaeff;
+  --warm:       #a0c4ff;
+  --star1:      #e8f0ff;
+  --card-bg:    #080e1c;
+  --card-bd:    #1a2840;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--sky-deep);
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* ── STAR FIELD (canvas) ─── */
+#star-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── FLASH ENTRY OVERLAY ─── */
+#entry-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%,
+    #ffffff 0%, #e8f4ff 25%, #b8d8ff 55%, #6aaeff 80%, transparent 100%);
+  opacity: 1;
+}
+#entry-flash.flash-out {
+  animation: flashFadeOut 0.9s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+@keyframes flashFadeOut {
+  0%   { opacity: 1; }
+  100% { opacity: 0; pointer-events: none; }
+}
+
+/* ── LAYOUT ─── */
+#page-wrap {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ─── */
+.sky-header {
+  text-align: center;
+  padding: 70px 20px 40px;
+  opacity: 0;
+  transform: translateY(-14px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.sky-header.entered { opacity: 1; transform: translateY(0); }
+
+.sky-hdeco {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 6px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.sky-title {
+  font-family: 'Silkscreen', monospace;
+  font-size: clamp(22px, 4vw, 38px);
+  letter-spacing: 3px;
+  line-height: 1.4;
+  color: var(--title-c);
+}
+.sky-title em {
+  color: var(--accent);
+  font-style: normal;
+  text-shadow: 0 0 20px rgba(106,174,255,0.5);
+}
+
+.sky-desc {
+  margin-top: 14px;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--muted);
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sky-rule {
+  width: 56px; height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-dk), transparent);
+  margin: 22px auto 0;
+}
+
+/* ── FILTER PILLS ─── */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 40px 32px;
+  opacity: 0;
+  transition: opacity 0.6s 0.2s ease;
+}
+.filter-row.entered { opacity: 1; }
+
+.filter-pill {
+  font-family: 'Silkscreen', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  border: 1.5px solid var(--border);
+  background: transparent;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  user-select: none;
+}
+.filter-pill:hover { color: var(--text); border-color: var(--border-dk); }
+.filter-pill.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(106,174,255,0.08);
+  box-shadow: 0 0 10px rgba(106,174,255,0.15);
+}
+
+/* ── GALLERY GRID ─── */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 28px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 40px 60px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.7s 0.35s ease, transform 0.7s 0.35s ease;
+}
+.gallery-grid.entered { opacity: 1; transform: translateY(0); }
+
+/* ── ART CARD ─── */
+.art-card {
+  border: 1.5px solid var(--card-bd);
+  background: var(--card-bg);
+  box-shadow: 0 0 0 transparent;
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.art-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(106,174,255,0.18), 4px 4px 0 var(--border-dk);
+  transform: translateY(-3px);
+}
+
+.card-img-wrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--sky-glow);
+}
+.card-img-wrap canvas {
+  width: 100%; height: 100%;
+  display: block;
+  image-rendering: pixelated;
+}
+
+/* shimmer on hover */
+.card-img-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    transparent 30%, rgba(106,174,255,0.12) 50%, transparent 70%);
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.art-card:hover .card-img-wrap::after {
+  opacity: 1;
+  transform: translateX(100%);
+  transition: transform 0.6s ease, opacity 0.3s;
+}
+
+.card-bar {
+  background: var(--sky-glow);
+  border-top: 1.5px solid var(--card-bd);
+  padding: 10px 12px 12px;
+  transition: border-color 0.3s;
+}
+.art-card:hover .card-bar { border-color: var(--accent); }
+
+.card-title {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--title-c);
+  margin-bottom: 4px;
+}
+.card-tag {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+
+/* star glow on card hover */
+.card-glow {
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(ellipse at 50% 50%,
+    rgba(106,174,255,0.12) 0%, transparent 65%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+.art-card:hover .card-glow { opacity: 1; }
+
+/* ── EMPTY STATE ─── */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  line-height: 2.2;
+}
+.empty-state span { color: var(--accent); }
+
+/* ── BACK BUTTON ─── */
+.sky-back {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  background: transparent;
+  border: 1.5px solid var(--border);
+  padding: 8px 18px;
+  cursor: pointer;
+  margin: 0 auto 40px;
+  display: block;
+  width: fit-content;
+  opacity: 0;
+  transition: opacity 0.5s 0.5s ease, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.sky-back.entered { opacity: 1; }
+.sky-back:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(106,174,255,0.2);
+}
+
+/* ── FOOTER ─── */
+.sky-footer {
+  background: #030609;
+  border-top: 1px solid var(--border);
+  padding: 18px 40px;
+  text-align: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.sky-footer p {
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+.sky-footer span { color: var(--accent); }
+
+/* ── RESPONSIVE ─── */
+@media (max-width: 600px) {
+  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); padding: 0 20px 40px; gap: 16px; }
+  .sky-header { padding: 50px 20px 28px; }
+  .filter-row { padding: 0 20px 24px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="star-canvas"></canvas>
+<div id="entry-flash"></div>
+
+<div id="page-wrap">
+
+  <header class="sky-header" id="sky-header">
+    <p class="sky-hdeco">✦ &nbsp; sky: children of the light &nbsp; ✦</p>
+    <h1 class="sky-title">galería <em>sky</em></h1>
+    <p class="sky-desc">pixel art de Sky: personajes, momentos y mundos del juego. cada pieza hecha con amor ✦</p>
+    <div class="sky-rule"></div>
+  </header>
+
+  <div class="filter-row" id="filter-row">
+    <button class="filter-pill active" data-filter="all">todo</button>
+    <button class="filter-pill" data-filter="personaje">personajes</button>
+    <button class="filter-pill" data-filter="escena">escenas</button>
+    <button class="filter-pill" data-filter="objeto">objetos</button>
+  </div>
+
+  <div class="gallery-grid" id="gallery-grid">
+    <!--
+      ═══════════════════════════════════════════════
+      CÓMO AÑADIR TU ARTE:
+
+      Reemplaza cada <canvas> con tu imagen así:
+      <img src="tu-imagen.png" alt="descripción"
+           style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;">
+
+      Cambia data-filter a: personaje | escena | objeto
+      Cambia card-title y card-tag con tu info
+      ═══════════════════════════════════════════════
+    -->
+
+    <div class="art-card" data-filter="personaje">
+      <div class="card-glow"></div>
+      <div class="card-img-wrap">
+        <canvas class="card-placeholder" data-palette="blue"></canvas>
+      </div>
+      <div class="card-bar">
+        <p class="card-title">personaje sky</p>
+        <p class="card-tag">· personaje ·</p>
+      </div>
+    </div>
+
+    <div class="art-card" data-filter="escena">
+      <div class="card-glow"></div>
+      <div class="card-img-wrap">
+        <canvas class="card-placeholder" data-palette="purple"></canvas>
+      </div>
+      <div class="card-bar">
+        <p class="card-title">pasaje de luz</p>
+        <p class="card-tag">· escena ·</p>
+      </div>
+    </div>
+
+    <div class="art-card" data-filter="personaje">
+      <div class="card-glow"></div>
+      <div class="card-img-wrap">
+        <canvas class="card-placeholder" data-palette="teal"></canvas>
+      </div>
+      <div class="card-bar">
+        <p class="card-title">spirit</p>
+        <p class="card-tag">· personaje ·</p>
+      </div>
+    </div>
+
+    <div class="art-card" data-filter="objeto">
+      <div class="card-glow"></div>
+      <div class="card-img-wrap">
+        <canvas class="card-placeholder" data-palette="gold"></canvas>
+      </div>
+      <div class="card-bar">
+        <p class="card-title">vela de luz</p>
+        <p class="card-tag">· objeto ·</p>
+      </div>
+    </div>
+
+    <div class="art-card" data-filter="escena">
+      <div class="card-glow"></div>
+      <div class="card-img-wrap">
+        <canvas class="card-placeholder" data-palette="night"></canvas>
+      </div>
+      <div class="card-bar">
+        <p class="card-title">noche estrellada</p>
+        <p class="card-tag">· escena ·</p>
+      </div>
+    </div>
+
+    <div class="art-card" data-filter="personaje">
+      <div class="card-glow"></div>
+      <div class="card-img-wrap">
+        <canvas class="card-placeholder" data-palette="rose"></canvas>
+      </div>
+      <div class="card-bar">
+        <p class="card-title">mi personaje</p>
+        <p class="card-tag">· personaje ·</p>
+      </div>
+    </div>
+
+  </div><!-- /gallery-grid -->
+
+  <button class="sky-back" id="sky-back">← volver a la galería</button>
+
+</div><!-- /page-wrap -->
+
+<footer class="sky-footer">
+  <p>✦ sky art · <span>BugCak3</span> · no repost sin crédito ✦</p>
+</footer>
+
+<script>
+/* ════════════════════════════════════════
+   STAR FIELD
+════════════════════════════════════════ */
+(function() {
+  const c = document.getElementById('star-canvas');
+  const ctx = c.getContext('2d');
+  const stars = [];
+  const TWINKLERS = [];
+
+  function resize() {
+    c.width  = window.innerWidth;
+    c.height = window.innerHeight;
+    drawStars();
+  }
+
+  function mkStar() {
+    return {
+      x:    Math.random() * c.width,
+      y:    Math.random() * c.height,
+      r:    Math.random() < 0.08 ? 1.5 : (Math.random() < 0.3 ? 1 : 0.5),
+      a:    0.3 + Math.random() * 0.7,
+      twinkle: Math.random() < 0.15,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.005 + Math.random() * 0.015,
+    };
+  }
+
+  function buildStars() {
+    stars.length = 0;
+    const n = Math.floor((c.width * c.height) / 3000);
+    for (let i = 0; i < n; i++) stars.push(mkStar());
+  }
+
+  function drawStars() {
+    ctx.clearRect(0, 0, c.width, c.height);
+
+    // faint nebula blobs
+    [[c.width*0.3, c.height*0.25, 0.04, '#1a2a6e'],
+     [c.width*0.7, c.height*0.6,  0.03, '#2a1a4e'],
+     [c.width*0.5, c.height*0.5,  0.025,'#0a1a3e']].forEach(([x,y,a,col]) => {
+      const g = ctx.createRadialGradient(x,y,0,x,y,c.width*0.4);
+      g.addColorStop(0, col.replace(')', `,${a})`).replace('rgb','rgba'));
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g; ctx.fillRect(0,0,c.width,c.height);
+    });
+
+    stars.forEach(s => {
+      ctx.globalAlpha = s.a;
+      ctx.fillStyle = s.r > 1 ? '#c8deff' : '#e8f0ff';
+      ctx.fillRect(Math.round(s.x), Math.round(s.y), s.r > 1 ? 2 : 1, s.r > 1 ? 2 : 1);
+      // cross sparkle for big stars
+      if (s.r > 1.2) {
+        ctx.globalAlpha = s.a * 0.4;
+        ctx.fillRect(Math.round(s.x)-2, Math.round(s.y), 1, 1);
+        ctx.fillRect(Math.round(s.x)+2, Math.round(s.y), 1, 1);
+        ctx.fillRect(Math.round(s.x), Math.round(s.y)-2, 1, 1);
+        ctx.fillRect(Math.round(s.x), Math.round(s.y)+2, 1, 1);
+      }
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  let animFrame = null;
+  function twinkleLoop(ts) {
+    animFrame = requestAnimationFrame(twinkleLoop);
+    ctx.clearRect(0,0,c.width,c.height);
+    // redraw nebula
+    [[c.width*0.3, c.height*0.25, 0.04, [26,42,110]],
+     [c.width*0.7, c.height*0.6,  0.03, [42,26,78]],
+     [c.width*0.5, c.height*0.5,  0.025,[10,26,62]]].forEach(([x,y,a,rgb]) => {
+      const g = ctx.createRadialGradient(x,y,0,x,y,c.width*0.4);
+      g.addColorStop(0, `rgba(${rgb.join(',')},${a})`);
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g; ctx.fillRect(0,0,c.width,c.height);
+    });
+    stars.forEach(s => {
+      let alpha = s.a;
+      if (s.twinkle) {
+        s.phase += s.speed;
+        alpha = s.a * (0.5 + 0.5 * Math.sin(s.phase));
+      }
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = s.r > 1 ? '#c8deff' : '#e8f0ff';
+      ctx.fillRect(Math.round(s.x), Math.round(s.y), s.r > 1 ? 2 : 1, s.r > 1 ? 2 : 1);
+      if (s.r > 1.2) {
+        ctx.globalAlpha = alpha * 0.4;
+        ctx.fillRect(Math.round(s.x)-2, Math.round(s.y), 1, 1);
+        ctx.fillRect(Math.round(s.x)+2, Math.round(s.y), 1, 1);
+        ctx.fillRect(Math.round(s.x), Math.round(s.y)-2, 1, 1);
+        ctx.fillRect(Math.round(s.x), Math.round(s.y)+2, 1, 1);
+      }
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  resize();
+  buildStars();
+  twinkleLoop(0);
+  window.addEventListener('resize', () => { resize(); buildStars(); });
+})();
+
+/* ════════════════════════════════════════
+   CARD PLACEHOLDERS
+════════════════════════════════════════ */
+const PALETTES = {
+  blue:   { bg:'#060e1e', stars:['#6aaeff','#a0c4ff','#c8deff'], accent:'#4080c0' },
+  purple: { bg:'#0e0618', stars:['#a060ff','#c090ff','#e0c0ff'], accent:'#6030a0' },
+  teal:   { bg:'#041418', stars:['#30c0d0','#80e0e8','#c0f0f4'], accent:'#108090' },
+  gold:   { bg:'#100c04', stars:['#e0a030','#f0c060','#fff0a0'], accent:'#a06010' },
+  night:  { bg:'#04060e', stars:['#4060a0','#6080c0','#a0b8e8'], accent:'#203060' },
+  rose:   { bg:'#140810', stars:['#e060a0','#f090c0','#ffc0e0'], accent:'#903060' },
+};
+
+document.querySelectorAll('.card-placeholder').forEach(canvas => {
+  const pal = PALETTES[canvas.dataset.palette] || PALETTES.blue;
+  const wrap = canvas.parentElement;
+  canvas.width  = wrap.offsetWidth  || 260;
+  canvas.height = wrap.offsetHeight || 260;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // bg
+  ctx.fillStyle = pal.bg; ctx.fillRect(0,0,W,H);
+
+  // soft glow center
+  const g = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*0.5);
+  g.addColorStop(0,   pal.accent + '44');
+  g.addColorStop(1,   'transparent');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  // pixel stars
+  for (let i = 0; i < 40; i++) {
+    const col = pal.stars[Math.floor(Math.random()*pal.stars.length)];
+    ctx.fillStyle = col;
+    ctx.globalAlpha = 0.3 + Math.random()*0.7;
+    const sz = Math.random() < 0.15 ? 2 : 1;
+    ctx.fillRect(Math.random()*W|0, Math.random()*H|0, sz, sz);
+  }
+  ctx.globalAlpha = 1;
+
+  // placeholder label
+  ctx.fillStyle = pal.stars[0] + '66';
+  ctx.font = 'bold 9px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('[ pon tu imagen aquí ]', W/2, H/2+4);
+});
+
+/* ════════════════════════════════════════
+   FILTER PILLS
+════════════════════════════════════════ */
+document.querySelectorAll('.filter-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    document.querySelectorAll('.art-card').forEach(card => {
+      const match = filter === 'all' || card.dataset.filter === filter;
+      card.style.transition = 'opacity 0.3s, transform 0.3s';
+      card.style.opacity    = match ? '1' : '0.15';
+      card.style.transform  = match ? 'scale(1)' : 'scale(0.96)';
+      card.style.pointerEvents = match ? 'all' : 'none';
+    });
+  });
+});
+
+/* ════════════════════════════════════════
+   NAVIGATION: sky → index (flash inversa)
+════════════════════════════════════════ */
+function goBack() {
+  const flash = document.getElementById('entry-flash');
+  flash.style.animation = 'none';
+  flash.style.opacity   = '0';
+  flash.style.transition = 'opacity 0.5s ease';
+  flash.getBoundingClientRect();
+  flash.style.opacity = '1';
+  sessionStorage.setItem('fromSky', '1');
+  setTimeout(() => { window.location.href = 'index.html'; }, 560);
+}
+document.getElementById('sky-back').addEventListener('click', goBack);
+
+/* ════════════════════════════════════════
+   PAGE ENTRY — flash se desvanece al entrar
+════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  const flash = document.getElementById('entry-flash');
+  // pequeño delay para que la página pinte antes de empezar el fade
+  setTimeout(() => {
+    flash.classList.add('flash-out');
+    // tras el fade, animar contenido
+    setTimeout(() => {
+      flash.style.display = 'none';
+      document.getElementById('sky-header').classList.add('entered');
+      document.getElementById('filter-row').classList.add('entered');
+      document.getElementById('gallery-grid').classList.add('entered');
+      document.getElementById('sky-back').classList.add('entered');
+    }, 850);
+  }, 80);
+});
+
+window.addEventListener('pageshow', e => {
+  if (e.persisted) {
+    document.getElementById('entry-flash').style.display = 'none';
+    document.getElementById('sky-header').classList.add('entered');
+    document.getElementById('filter-row').classList.add('entered');
+    document.getElementById('gallery-grid').classList.add('entered');
+    document.getElementById('sky-back').classList.add('entered');
+  }
+});
+</script>
+</body>
+</html>
