@@ -54,15 +54,11 @@ body {
   pointer-events: none;
   background: radial-gradient(ellipse at 50% 50%,
     #ffffff 0%, #e8f4ff 25%, #b8d8ff 55%, #6aaeff 80%, transparent 100%);
-  opacity: 1;
+  opacity: 0; /* empieza invisible — JS lo pone a 1 antes del fade */
+  transition: opacity 0.9s cubic-bezier(0.4, 0, 0.6, 1);
 }
-#entry-flash.flash-out {
-  animation: flashFadeOut 0.9s cubic-bezier(0.4, 0, 0.6, 1) forwards;
-}
-@keyframes flashFadeOut {
-  0%   { opacity: 1; }
-  100% { opacity: 0; pointer-events: none; }
-}
+#entry-flash.flash-in  { opacity: 1; }
+#entry-flash.flash-out { opacity: 0; }
 
 /* ── LAYOUT ─── */
 #page-wrap {
@@ -576,159 +572,70 @@ body {
 
 <script>
 /* ════════════════════════════════════════
-   STAR FIELD — OPTIMIZADO (ESTÁTICO)
+   STAR FIELD — ESTÁTICO (sin animación, sin lag)
 ════════════════════════════════════════ */
 (function () {
-  const c = document.getElementById('star-canvas');
+  const c   = document.getElementById('star-canvas');
   const ctx = c.getContext('2d', { alpha: true });
 
-  const stars = [];
-
   function resize() {
-    // limita resolución para evitar lag en pantallas HiDPI
     const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
-
-    c.width = window.innerWidth * DPR;
+    c.width  = window.innerWidth  * DPR;
     c.height = window.innerHeight * DPR;
-
-    c.style.width = window.innerWidth + 'px';
+    c.style.width  = window.innerWidth  + 'px';
     c.style.height = window.innerHeight + 'px';
-
-    // escala interna
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
-    buildStars();
-    drawStars();
+    draw();
   }
 
-  function mkStar() {
-    return {
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
+  function draw() {
+    const W = window.innerWidth, H = window.innerHeight;
+    ctx.clearRect(0, 0, W, H);
 
-      // tamaños simples para look pixel
-      size:
-        Math.random() < 0.08
-          ? 2
-          : Math.random() < 0.3
-          ? 1
-          : 1,
+    /* nebulosidades suaves */
+    [
+      [W * 0.3, H * 0.25, W * 0.45, [26, 42, 110], 0.045],
+      [W * 0.72, H * 0.6,  W * 0.4,  [42, 26, 78],  0.035],
+      [W * 0.5,  H * 0.5,  W * 0.5,  [10, 26, 62],  0.03 ],
+    ].forEach(([x, y, r, rgb, a]) => {
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(${rgb},${a})`);
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
 
-      alpha: 0.35 + Math.random() * 0.65,
-
-      bright: Math.random() < 0.12
-    };
-  }
-
-  function buildStars() {
-    stars.length = 0;
-
-    // menos densidad = mucho menos costo
-    const n = Math.floor(
-      (window.innerWidth * window.innerHeight) / 6500
-    );
-
+    /* estrellas */
+    const n = Math.floor((W * H) / 6500);
     for (let i = 0; i < n; i++) {
-      stars.push(mkStar());
-    }
-  }
-
-  function drawStars() {
-    ctx.clearRect(
-      0,
-      0,
-      window.innerWidth,
-      window.innerHeight
-    );
-
-    for (const s of stars) {
-      ctx.globalAlpha = s.alpha;
-      ctx.fillStyle = s.bright
-        ? '#c8deff'
-        : '#e8f0ff';
-
-      const x = Math.round(s.x);
-      const y = Math.round(s.y);
-
-      ctx.fillRect(
-        x,
-        y,
-        s.size,
-        s.size
-      );
-
-      // mini sparkle cruzado solo en algunas
-      if (s.size > 1 && s.bright) {
-        ctx.globalAlpha = s.alpha * 0.35;
-
+      const bright = Math.random() < 0.12;
+      const big    = Math.random() < 0.08;
+      const x = Math.random() * W | 0;
+      const y = Math.random() * H | 0;
+      const sz = big ? 2 : 1;
+      ctx.globalAlpha = 0.35 + Math.random() * 0.65;
+      ctx.fillStyle = bright ? '#c8deff' : '#e8f0ff';
+      ctx.fillRect(x, y, sz, sz);
+      if (big && bright) {
+        ctx.globalAlpha *= 0.35;
         ctx.fillRect(x - 2, y, 1, 1);
         ctx.fillRect(x + 2, y, 1, 1);
         ctx.fillRect(x, y - 2, 1, 1);
         ctx.fillRect(x, y + 2, 1, 1);
       }
     }
-
     ctx.globalAlpha = 1;
   }
 
-  // compatibilidad con tu modal
-  window._starPause = () => {};
+  /* pause/resume para el modal (noop en modo estático) */
+  window._starPause  = () => {};
   window._starResume = () => {};
 
   resize();
-
   window.addEventListener('resize', resize);
 })();
 
-  let animFrame = null;
-  let paused = false;
-  let lastTs = 0;
-  const FPS = 30, INTERVAL = 1000 / FPS;
 
-  function twinkleLoop(ts) {
-    animFrame = requestAnimationFrame(twinkleLoop);
-    if (paused) return;
-    if (ts - lastTs < INTERVAL) return; // throttle a 30fps
-    lastTs = ts;
-    ctx.clearRect(0,0,c.width,c.height);
-    // redraw nebula
-    [[c.width*0.3, c.height*0.25, 0.04, [26,42,110]],
-     [c.width*0.7, c.height*0.6,  0.03, [42,26,78]],
-     [c.width*0.5, c.height*0.5,  0.025,[10,26,62]]].forEach(([x,y,a,rgb]) => {
-      const g = ctx.createRadialGradient(x,y,0,x,y,c.width*0.4);
-      g.addColorStop(0, `rgba(${rgb.join(',')},${a})`);
-      g.addColorStop(1, 'transparent');
-      ctx.fillStyle = g; ctx.fillRect(0,0,c.width,c.height);
-    });
-    stars.forEach(s => {
-      let alpha = s.a;
-      if (s.twinkle) {
-        s.phase += s.speed;
-        alpha = s.a * (0.5 + 0.5 * Math.sin(s.phase));
-      }
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = s.r > 1 ? '#c8deff' : '#e8f0ff';
-      ctx.fillRect(Math.round(s.x), Math.round(s.y), s.r > 1 ? 2 : 1, s.r > 1 ? 2 : 1);
-      if (s.r > 1.2) {
-        ctx.globalAlpha = alpha * 0.4;
-        ctx.fillRect(Math.round(s.x)-2, Math.round(s.y), 1, 1);
-        ctx.fillRect(Math.round(s.x)+2, Math.round(s.y), 1, 1);
-        ctx.fillRect(Math.round(s.x), Math.round(s.y)-2, 1, 1);
-        ctx.fillRect(Math.round(s.x), Math.round(s.y)+2, 1, 1);
-      }
-    });
-    ctx.globalAlpha = 1;
-  }
-
-  // exponer pause/resume para el modal
-  window._starPause  = () => { paused = true; };
-  window._starResume = () => { paused = false; };
-
-  resize();
-  buildStars();
-  twinkleLoop(0);
-  window.addEventListener('resize', () => { resize(); buildStars(); });
-})();
 
 /* ════════════════════════════════════════
    CARD PLACEHOLDERS
@@ -833,17 +740,26 @@ document.getElementById('sky-back').addEventListener('click', goBack);
 ════════════════════════════════════════ */
 window.addEventListener('load', () => {
   const flash = document.getElementById('entry-flash');
+
+  // Forzar repaint antes de animar (evita el brillo pegado)
+  flash.style.opacity = '1';
+  flash.getBoundingClientRect(); // flush
+
+  function showContent() {
+    flash.style.display = 'none';
+    document.getElementById('sky-header').classList.add('entered');
+    document.getElementById('filter-row').classList.add('entered');
+    document.getElementById('gallery-grid').classList.add('entered');
+    document.getElementById('sky-back').classList.add('entered');
+  }
+
   // pequeño delay para que la página pinte antes de empezar el fade
   setTimeout(() => {
+    flash.addEventListener('transitionend', showContent, { once: true });
     flash.classList.add('flash-out');
-    // tras el fade, animar contenido
-    setTimeout(() => {
-      flash.style.display = 'none';
-      document.getElementById('sky-header').classList.add('entered');
-      document.getElementById('filter-row').classList.add('entered');
-      document.getElementById('gallery-grid').classList.add('entered');
-      document.getElementById('sky-back').classList.add('entered');
-    }, 850);
+
+    // safety net: si transitionend no dispara (pestaña en fondo, etc.)
+    setTimeout(showContent, 1100);
   }, 80);
 });
 
