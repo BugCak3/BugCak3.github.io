@@ -638,8 +638,15 @@ body {
   }
 
   let animFrame = null;
+  let paused = false;
+  let lastTs = 0;
+  const FPS = 30, INTERVAL = 1000 / FPS;
+
   function twinkleLoop(ts) {
     animFrame = requestAnimationFrame(twinkleLoop);
+    if (paused) return;
+    if (ts - lastTs < INTERVAL) return; // throttle a 30fps
+    lastTs = ts;
     ctx.clearRect(0,0,c.width,c.height);
     // redraw nebula
     [[c.width*0.3, c.height*0.25, 0.04, [26,42,110]],
@@ -669,6 +676,10 @@ body {
     });
     ctx.globalAlpha = 1;
   }
+
+  // exponer pause/resume para el modal
+  window._starPause  = () => { paused = true; };
+  window._starResume = () => { paused = false; };
 
   resize();
   buildStars();
@@ -824,22 +835,31 @@ window.addEventListener('pageshow', e => {
     return title.replace(/ /g, '_') + '.' + ext;
   }
 
-  /* Intenta cargar gif primero; si falla, intenta mp4 */
+  /* Prueba webm → mp4 → gif en orden */
   function loadMedia(title, onLoad, onError) {
-    const gif = titleToFile(title, 'gif');
-    const mp4 = titleToFile(title, 'mp4');
+    const webm = titleToFile(title, 'webm');
+    const mp4  = titleToFile(title, 'mp4');
+    const gif  = titleToFile(title, 'gif');
 
-    // prueba gif
-    const testImg = new Image();
-    testImg.onload = () => onLoad('gif', gif);
-    testImg.onerror = () => {
-      // prueba mp4
-      const testVid = document.createElement('video');
-      testVid.oncanplay = () => onLoad('mp4', mp4);
-      testVid.onerror   = () => onError();
-      testVid.src = mp4;
-    };
-    testImg.src = gif;
+    function tryGif() {
+      const img = new Image();
+      img.onload  = () => onLoad('gif', gif);
+      img.onerror = () => onError();
+      img.src = gif;
+    }
+    function tryMp4() {
+      const v = document.createElement('video');
+      v.oncanplay = () => onLoad('mp4', mp4);
+      v.onerror   = tryGif;
+      v.src = mp4;
+    }
+    function tryWebm() {
+      const v = document.createElement('video');
+      v.oncanplay = () => onLoad('webm', webm);
+      v.onerror   = tryMp4;
+      v.src = webm;
+    }
+    tryWebm();
   }
 
   function openModal(title, tag) {
@@ -853,6 +873,7 @@ window.addEventListener('pageshow', e => {
     // mostrar modal primero para que la animación se vea
     modal.classList.add('modal-open');
     document.body.style.overflow = 'hidden';
+    if (window._starPause) window._starPause();
 
     loadMedia(
       title,
@@ -865,14 +886,19 @@ window.addEventListener('pageshow', e => {
           mediaWrap.appendChild(img);
         } else {
           const vid = document.createElement('video');
-          vid.src         = src;
           vid.autoplay    = true;
           vid.loop        = true;
           vid.muted       = true;
           vid.playsInline = true;
           vid.preload     = 'auto';
-          vid.style.willChange = 'transform';
-          vid.style.transform  = 'translateZ(0)';
+          vid.style.willChange       = 'transform';
+          vid.style.transform        = 'translateZ(0)';
+          vid.style.backfaceVisibility = 'hidden';
+          // añadir source con tipo correcto para mejor decodificación
+          const source = document.createElement('source');
+          source.src  = src;
+          source.type = type === 'webm' ? 'video/webm' : 'video/mp4';
+          vid.appendChild(source);
           vid.addEventListener('canplay', () => vid.play().catch(() => {}), { once: true });
           mediaWrap.appendChild(vid);
           currentVideo = vid;
@@ -896,8 +922,8 @@ window.addEventListener('pageshow', e => {
   function closeModal() {
     modal.classList.remove('modal-open');
     document.body.style.overflow = '';
+    if (window._starResume) window._starResume();
     if (currentVideo) { currentVideo.pause(); currentVideo = null; }
-    // limpiar media tras la animación de cierre
     setTimeout(() => { mediaWrap.innerHTML = ''; }, 350);
   }
 
