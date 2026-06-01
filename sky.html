@@ -54,7 +54,7 @@ body {
   pointer-events: none;
   background: radial-gradient(ellipse at 50% 50%,
     #ffffff 0%, #e8f4ff 25%, #b8d8ff 55%, #6aaeff 80%, transparent 100%);
-  opacity: 0; /* empieza invisible — JS lo pone a 1 antes del fade */
+  opacity: 0;
   transition: opacity 0.9s cubic-bezier(0.4, 0, 0.6, 1);
 }
 #entry-flash.flash-in  { opacity: 1; }
@@ -333,13 +333,10 @@ body {
   pointer-events: all;
 }
 
-/* fondo borroso */
 .modal-backdrop {
   position: absolute;
   inset: 0;
   background: rgba(2, 5, 12, 0.88);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   cursor: pointer;
 }
 
@@ -426,72 +423,34 @@ body {
   backface-visibility: hidden;
 }
 
-/* ── VOLUME CONTROL ─── */
-.vol-ctrl {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-top: 1.5px solid var(--border);
-  background: #030609;
-  flex-shrink: 0;
-}
-.vol-ctrl.vol-visible { display: flex; }
-
-.vol-btn {
-  width: 28px; height: 28px;
-  background: transparent;
-  border: 1.5px solid var(--border);
-  color: var(--muted);
-  font-size: 13px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
-  font-family: 'Silkscreen', monospace;
-}
-.vol-btn:hover, .vol-btn.vol-on {
-  color: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 10px rgba(106,174,255,0.2);
-}
-
-/* track del slider */
-.vol-track {
-  flex: 1;
-  height: 4px;
-  background: var(--border);
+/* ── VOLUME ICON flotante ─── */
+.vid-wrap {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
-.vol-fill {
-  height: 100%;
-  background: var(--accent);
-  width: 0%;
-  transition: width 0.08s linear;
-  pointer-events: none;
-}
-/* thumb pixel */
-.vol-thumb {
+.vol-icon {
   position: absolute;
   top: 50%;
-  width: 8px; height: 8px;
-  background: var(--accent);
-  border: 1.5px solid var(--border-dk);
+  left: 50%;
   transform: translate(-50%, -50%);
-  pointer-events: none;
-  transition: left 0.08s linear;
-  box-shadow: 0 0 6px rgba(106,174,255,0.4);
-}
-.vol-label {
   font-family: 'Silkscreen', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 2px;
-  color: var(--muted);
-  width: 28px;
-  text-align: right;
-  flex-shrink: 0;
+  color: var(--accent);
+  background: rgba(3, 6, 9, 0.82);
+  border: 1.5px solid var(--border-dk);
+  padding: 9px 13px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 0 14px rgba(106,174,255,0.15);
+  user-select: none;
 }
+.vol-icon.show { opacity: 1; }
 
 /* placeholder mientras carga */
 .modal-loading {
@@ -630,14 +589,6 @@ body {
     <div class="modal-media-wrap" id="modal-media-wrap">
       <!-- gif o video se inyecta aquí -->
     </div>
-    <div class="vol-ctrl" id="vol-ctrl">
-      <button class="vol-btn" id="vol-btn" title="activar sonido">🔇</button>
-      <div class="vol-track" id="vol-track">
-        <div class="vol-fill" id="vol-fill"></div>
-        <div class="vol-thumb" id="vol-thumb" style="left:0%"></div>
-      </div>
-      <span class="vol-label" id="vol-label">0%</span>
-    </div>
   </div>
 </div>
 
@@ -666,12 +617,10 @@ body {
   function draw() {
     const W = window.innerWidth, H = window.innerHeight;
     ctx.clearRect(0, 0, W, H);
-
-    /* nebulosidades suaves */
     [
-      [W * 0.3, H * 0.25, W * 0.45, [26, 42, 110], 0.045],
-      [W * 0.72, H * 0.6,  W * 0.4,  [42, 26, 78],  0.035],
-      [W * 0.5,  H * 0.5,  W * 0.5,  [10, 26, 62],  0.03 ],
+      [W*0.3, H*0.25, W*0.45, '26,42,110', 0.045],
+      [W*0.72, H*0.6,  W*0.4,  '42,26,78',  0.035],
+      [W*0.5,  H*0.5,  W*0.5,  '10,26,62',  0.03 ],
     ].forEach(([x, y, r, rgb, a]) => {
       const g = ctx.createRadialGradient(x, y, 0, x, y, r);
       g.addColorStop(0, `rgba(${rgb},${a})`);
@@ -679,38 +628,30 @@ body {
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
     });
-
-    /* estrellas */
     const n = Math.floor((W * H) / 6500);
     for (let i = 0; i < n; i++) {
       const bright = Math.random() < 0.12;
       const big    = Math.random() < 0.08;
       const x = Math.random() * W | 0;
       const y = Math.random() * H | 0;
-      const sz = big ? 2 : 1;
       ctx.globalAlpha = 0.35 + Math.random() * 0.65;
       ctx.fillStyle = bright ? '#c8deff' : '#e8f0ff';
-      ctx.fillRect(x, y, sz, sz);
+      ctx.fillRect(x, y, big ? 2 : 1, big ? 2 : 1);
       if (big && bright) {
         ctx.globalAlpha *= 0.35;
-        ctx.fillRect(x - 2, y, 1, 1);
-        ctx.fillRect(x + 2, y, 1, 1);
-        ctx.fillRect(x, y - 2, 1, 1);
-        ctx.fillRect(x, y + 2, 1, 1);
+        ctx.fillRect(x-2,y,1,1); ctx.fillRect(x+2,y,1,1);
+        ctx.fillRect(x,y-2,1,1); ctx.fillRect(x,y+2,1,1);
       }
     }
     ctx.globalAlpha = 1;
   }
 
-  /* pause/resume para el modal (noop en modo estático) */
   window._starPause  = () => {};
   window._starResume = () => {};
 
   resize();
   window.addEventListener('resize', resize);
 })();
-
-
 
 /* ════════════════════════════════════════
    CARD PLACEHOLDERS
@@ -800,10 +741,10 @@ document.querySelectorAll('.filter-pill').forEach(btn => {
 ════════════════════════════════════════ */
 function goBack() {
   const flash = document.getElementById('entry-flash');
-  flash.style.display    = '';          // quitar el display:none del showContent anterior
+  flash.style.display    = '';
   flash.style.transition = 'none';
   flash.style.opacity    = '0';
-  flash.getBoundingClientRect();        // flush
+  flash.getBoundingClientRect();
   flash.style.transition = 'opacity 0.5s ease';
   flash.style.opacity    = '1';
   sessionStorage.setItem('fromSky', '1');
@@ -816,10 +757,8 @@ document.getElementById('sky-back').addEventListener('click', goBack);
 ════════════════════════════════════════ */
 window.addEventListener('load', () => {
   const flash = document.getElementById('entry-flash');
-
-  // Forzar repaint antes de animar (evita el brillo pegado)
   flash.style.opacity = '1';
-  flash.getBoundingClientRect(); // flush
+  flash.getBoundingClientRect();
 
   function showContent() {
     flash.style.display = 'none';
@@ -829,12 +768,9 @@ window.addEventListener('load', () => {
     document.getElementById('sky-back').classList.add('entered');
   }
 
-  // pequeño delay para que la página pinte antes de empezar el fade
   setTimeout(() => {
     flash.addEventListener('transitionend', showContent, { once: true });
     flash.classList.add('flash-out');
-
-    // safety net: si transitionend no dispara (pestaña en fondo, etc.)
     setTimeout(showContent, 1100);
   }, 80);
 });
@@ -857,13 +793,13 @@ window.addEventListener('pageshow', e => {
 (function() {
   const modal     = document.getElementById('art-modal');
   const backdrop  = document.getElementById('modal-backdrop');
-  const box       = document.getElementById('modal-box');
   const mediaWrap = document.getElementById('modal-media-wrap');
   const titleEl   = document.getElementById('modal-title');
   const tagEl     = document.getElementById('modal-tag');
   const closeBtn  = document.getElementById('modal-close');
 
   let currentVideo = null;
+  let iconTimer    = null;
 
   /* Convierte el título en nombre de archivo — espacios → guiones bajos */
   function titleToFile(title, ext) {
@@ -875,7 +811,6 @@ window.addEventListener('pageshow', e => {
     const webm = titleToFile(title, 'webm');
     const mp4  = titleToFile(title, 'mp4');
     const gif  = titleToFile(title, 'gif');
-
     function tryGif() {
       const img = new Image();
       img.onload  = () => onLoad('gif', gif);
@@ -897,74 +832,22 @@ window.addEventListener('pageshow', e => {
     tryWebm();
   }
 
-  const volCtrl  = document.getElementById('vol-ctrl');
-  const volBtn   = document.getElementById('vol-btn');
-  const volTrack = document.getElementById('vol-track');
-  const volFill  = document.getElementById('vol-fill');
-  const volThumb = document.getElementById('vol-thumb');
-  const volLabel = document.getElementById('vol-label');
-
-  let volLevel = 0.7; // volumen guardado para cuando se reactiva
-
-  function setVolume(v) {
-    v = Math.max(0, Math.min(1, v));
-    volLevel = v;
-    if (currentVideo) {
-      currentVideo.volume = v;
-      currentVideo.muted  = (v === 0);
-    }
-    const pct = Math.round(v * 100);
-    volFill.style.width   = pct + '%';
-    volThumb.style.left   = pct + '%';
-    volLabel.textContent  = pct + '%';
-    volBtn.textContent    = v === 0 ? '🔇' : v < 0.5 ? '🔉' : '🔊';
-    volBtn.classList.toggle('vol-on', v > 0);
+  /* Muestra el icono flotante y lo oculta tras 1.8s */
+  function flashIcon(icon, muted) {
+    clearTimeout(iconTimer);
+    icon.textContent = muted ? '🔇 silenciado' : '🔊 con sonido';
+    icon.classList.add('show');
+    iconTimer = setTimeout(() => icon.classList.remove('show'), 1800);
   }
-
-  // arrastrar el slider
-  let dragging = false;
-  function trackPct(e) {
-    const r = volTrack.getBoundingClientRect();
-    return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-  }
-  volTrack.addEventListener('mousedown', e => {
-    dragging = true;
-    setVolume(trackPct(e));
-  });
-  document.addEventListener('mousemove', e => {
-    if (dragging) setVolume(trackPct(e));
-  });
-  document.addEventListener('mouseup', () => { dragging = false; });
-
-  // touch support
-  volTrack.addEventListener('touchstart', e => {
-    dragging = true;
-    setVolume(trackPct(e.touches[0]));
-  }, { passive: true });
-  document.addEventListener('touchmove', e => {
-    if (dragging) setVolume(trackPct(e.touches[0]));
-  }, { passive: true });
-  document.addEventListener('touchend', () => { dragging = false; });
-
-  // botón mute/unmute
-  volBtn.addEventListener('click', () => {
-    if (currentVideo && !currentVideo.muted && currentVideo.volume > 0) {
-      setVolume(0);
-    } else {
-      setVolume(volLevel > 0 ? volLevel : 0.7);
-    }
-  });
 
   function openModal(title, tag) {
     titleEl.textContent = title;
     tagEl.textContent   = tag;
 
-    // limpiar contenido anterior
     mediaWrap.innerHTML = '<p class="modal-loading">cargando ✦</p>';
     if (currentVideo) { currentVideo.pause(); currentVideo = null; }
-    volCtrl.classList.remove('vol-visible');
+    clearTimeout(iconTimer);
 
-    // mostrar modal primero para que la animación se vea
     modal.classList.add('modal-open');
     document.body.style.overflow = 'hidden';
     if (window._starPause) window._starPause();
@@ -979,36 +862,54 @@ window.addEventListener('pageshow', e => {
           img.alt = title;
           mediaWrap.appendChild(img);
         } else {
+          /* contenedor relativo para el icono flotante */
+          const wrap = document.createElement('div');
+          wrap.className = 'vid-wrap';
+
           const vid = document.createElement('video');
           vid.autoplay    = true;
           vid.loop        = true;
           vid.muted       = true;
           vid.playsInline = true;
           vid.preload     = 'auto';
-          vid.style.willChange        = 'transform';
-          vid.style.transform         = 'translateZ(0)';
+          vid.style.maxWidth        = '100%';
+          vid.style.maxHeight       = 'calc(90vh - 120px)';
+          vid.style.display         = 'block';
+          vid.style.willChange      = 'transform';
+          vid.style.transform       = 'translateZ(0)';
           vid.style.backfaceVisibility = 'hidden';
+
           const source = document.createElement('source');
           source.src  = src;
           source.type = type === 'webm' ? 'video/webm' : 'video/mp4';
           vid.appendChild(source);
           vid.addEventListener('canplay', () => vid.play().catch(() => {}), { once: true });
 
-          // mostrar control de volumen solo si el video tiene audio
+          /* icono de volumen flotante */
+          const icon = document.createElement('div');
+          icon.className = 'vol-icon';
+          icon.textContent = '🔇 silenciado';
+
+          /* al cargar, mostrar icono de silenciado brevemente */
           vid.addEventListener('canplay', () => {
-            // pequeño truco: intentar reproducir con volumen para detectar audio
-            vid.muted  = true;
-            vid.volume = 0;
-            volCtrl.classList.add('vol-visible');
-            setVolume(0); // empieza muteado, usuario activa
+            flashIcon(icon, true);
           }, { once: true });
 
-          mediaWrap.appendChild(vid);
+          /* clic en el video → toggle mute */
+          wrap.addEventListener('click', () => {
+            if (!currentVideo) return;
+            currentVideo.muted = !currentVideo.muted;
+            if (!currentVideo.muted) currentVideo.volume = 1;
+            flashIcon(icon, currentVideo.muted);
+          });
+
+          wrap.appendChild(vid);
+          wrap.appendChild(icon);
+          mediaWrap.appendChild(wrap);
           currentVideo = vid;
         }
       },
       () => {
-        // archivo no encontrado — muestra aviso amigable
         mediaWrap.innerHTML = `
           <div style="text-align:center;padding:40px 20px;">
             <p style="font-family:'Silkscreen',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);line-height:2.2;">
@@ -1024,14 +925,13 @@ window.addEventListener('pageshow', e => {
 
   function closeModal() {
     modal.classList.remove('modal-open');
-    volCtrl.classList.remove('vol-visible');
     document.body.style.overflow = '';
+    clearTimeout(iconTimer);
     if (window._starResume) window._starResume();
     if (currentVideo) { currentVideo.pause(); currentVideo = null; }
     setTimeout(() => { mediaWrap.innerHTML = ''; }, 350);
   }
 
-  // clic en cada card
   document.querySelectorAll('.art-card').forEach(card => {
     card.addEventListener('click', () => {
       const title = card.querySelector('.card-title').textContent.trim();
@@ -1040,7 +940,6 @@ window.addEventListener('pageshow', e => {
     });
   });
 
-  // cerrar con botón, backdrop o Escape
   closeBtn.addEventListener('click', closeModal);
   backdrop.addEventListener('click', closeModal);
   document.addEventListener('keydown', e => {
