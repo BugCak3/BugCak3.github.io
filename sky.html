@@ -576,7 +576,7 @@ body {
 
 <script>
 /* ════════════════════════════════════════
-   STAR FIELD
+   STAR FIELD — OPTIMIZADO (ESTÁTICO)
 ════════════════════════════════════════ */
 (function () {
   const c = document.getElementById('star-canvas');
@@ -584,149 +584,100 @@ body {
 
   const stars = [];
 
-  let paused = false;
-  let lastTs = 0;
-
-  const FPS = 30;
-  const INTERVAL = 1000 / FPS;
-
-  // canvas cache de nebulosa
-  const nebulaCanvas = document.createElement('canvas');
-  const nebulaCtx = nebulaCanvas.getContext('2d');
-
   function resize() {
+    // limita resolución para evitar lag en pantallas HiDPI
     const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
 
-    c.width = innerWidth * DPR;
-    c.height = innerHeight * DPR;
+    c.width = window.innerWidth * DPR;
+    c.height = window.innerHeight * DPR;
 
-    c.style.width = innerWidth + 'px';
-    c.style.height = innerHeight + 'px';
+    c.style.width = window.innerWidth + 'px';
+    c.style.height = window.innerHeight + 'px';
 
+    // escala interna
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-    nebulaCanvas.width = innerWidth;
-    nebulaCanvas.height = innerHeight;
-
-    buildNebula();
     buildStars();
-  }
-
-  function buildNebula() {
-    nebulaCtx.clearRect(
-      0,
-      0,
-      nebulaCanvas.width,
-      nebulaCanvas.height
-    );
-
-    [
-      [0.3,0.25,0.04,[26,42,110]],
-      [0.7,0.6,0.03,[42,26,78]],
-      [0.5,0.5,0.025,[10,26,62]]
-    ].forEach(([px, py, a, rgb]) => {
-      const x = innerWidth * px;
-      const y = innerHeight * py;
-
-      const g = nebulaCtx.createRadialGradient(
-        x,y,0,
-        x,y,
-        innerWidth * 0.4
-      );
-
-      g.addColorStop(
-        0,
-        `rgba(${rgb.join(',')},${a})`
-      );
-
-      g.addColorStop(1,'transparent');
-
-      nebulaCtx.fillStyle = g;
-      nebulaCtx.fillRect(
-        0,
-        0,
-        innerWidth,
-        innerHeight
-      );
-    });
+    drawStars();
   }
 
   function mkStar() {
     return {
-      x: Math.random() * innerWidth,
-      y: Math.random() * innerHeight,
-      r: Math.random() < 0.08 ? 1.5 :
-         Math.random() < 0.3 ? 1 : 0.5,
-      a: 0.3 + Math.random() * 0.7,
-      twinkle: Math.random() < 0.15,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.005 + Math.random() * 0.015
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+
+      // tamaños simples para look pixel
+      size:
+        Math.random() < 0.08
+          ? 2
+          : Math.random() < 0.3
+          ? 1
+          : 1,
+
+      alpha: 0.35 + Math.random() * 0.65,
+
+      bright: Math.random() < 0.12
     };
   }
 
   function buildStars() {
     stars.length = 0;
 
+    // menos densidad = mucho menos costo
     const n = Math.floor(
-      (innerWidth * innerHeight) / 6000
+      (window.innerWidth * window.innerHeight) / 6500
     );
 
-    for(let i=0;i<n;i++){
+    for (let i = 0; i < n; i++) {
       stars.push(mkStar());
     }
   }
 
-  function draw(ts) {
-    requestAnimationFrame(draw);
+  function drawStars() {
+    ctx.clearRect(
+      0,
+      0,
+      window.innerWidth,
+      window.innerHeight
+    );
 
-    if(paused) return;
-    if(ts - lastTs < INTERVAL) return;
+    for (const s of stars) {
+      ctx.globalAlpha = s.alpha;
+      ctx.fillStyle = s.bright
+        ? '#c8deff'
+        : '#e8f0ff';
 
-    lastTs = ts;
-
-    ctx.clearRect(0,0,innerWidth,innerHeight);
-
-    // dibujar nebulosa cacheada
-    ctx.drawImage(nebulaCanvas,0,0);
-
-    for(const s of stars){
-
-      let alpha = s.a;
-
-      if(s.twinkle){
-        s.phase += s.speed;
-
-        alpha =
-          s.a *
-          (0.5 + 0.5 * Math.sin(s.phase));
-      }
-
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle =
-        s.r > 1 ? '#c8deff' : '#e8f0ff';
-
-      const x = s.x | 0;
-      const y = s.y | 0;
+      const x = Math.round(s.x);
+      const y = Math.round(s.y);
 
       ctx.fillRect(
         x,
         y,
-        s.r > 1 ? 2 : 1,
-        s.r > 1 ? 2 : 1
+        s.size,
+        s.size
       );
+
+      // mini sparkle cruzado solo en algunas
+      if (s.size > 1 && s.bright) {
+        ctx.globalAlpha = s.alpha * 0.35;
+
+        ctx.fillRect(x - 2, y, 1, 1);
+        ctx.fillRect(x + 2, y, 1, 1);
+        ctx.fillRect(x, y - 2, 1, 1);
+        ctx.fillRect(x, y + 2, 1, 1);
+      }
     }
 
     ctx.globalAlpha = 1;
   }
 
+  // compatibilidad con tu modal
+  window._starPause = () => {};
+  window._starResume = () => {};
+
   resize();
 
-  requestAnimationFrame(draw);
-
-  addEventListener('resize', resize);
-
-  window._starPause = () => paused = true;
-  window._starResume = () => paused = false;
+  window.addEventListener('resize', resize);
 })();
 
   let animFrame = null;
