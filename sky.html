@@ -575,6 +575,67 @@ body {
 </footer>
 
 <script>
+/* ════════════════════════════════════════
+   STAR FIELD
+════════════════════════════════════════ */
+(function() {
+  const c = document.getElementById('star-canvas');
+  const ctx = c.getContext('2d');
+  const stars = [];
+  const TWINKLERS = [];
+
+  function resize() {
+    c.width  = window.innerWidth;
+    c.height = window.innerHeight;
+    drawStars();
+  }
+
+  function mkStar() {
+    return {
+      x:    Math.random() * c.width,
+      y:    Math.random() * c.height,
+      r:    Math.random() < 0.08 ? 1.5 : (Math.random() < 0.3 ? 1 : 0.5),
+      a:    0.3 + Math.random() * 0.7,
+      twinkle: Math.random() < 0.15,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.005 + Math.random() * 0.015,
+    };
+  }
+
+  function buildStars() {
+    stars.length = 0;
+    const n = Math.floor((c.width * c.height) / 3000);
+    for (let i = 0; i < n; i++) stars.push(mkStar());
+  }
+
+  function drawStars() {
+    ctx.clearRect(0, 0, c.width, c.height);
+
+    // faint nebula blobs
+    [[c.width*0.3, c.height*0.25, 0.04, '#1a2a6e'],
+     [c.width*0.7, c.height*0.6,  0.03, '#2a1a4e'],
+     [c.width*0.5, c.height*0.5,  0.025,'#0a1a3e']].forEach(([x,y,a,col]) => {
+      const g = ctx.createRadialGradient(x,y,0,x,y,c.width*0.4);
+      g.addColorStop(0, col.replace(')', `,${a})`).replace('rgb','rgba'));
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g; ctx.fillRect(0,0,c.width,c.height);
+    });
+
+    stars.forEach(s => {
+      ctx.globalAlpha = s.a;
+      ctx.fillStyle = s.r > 1 ? '#c8deff' : '#e8f0ff';
+      ctx.fillRect(Math.round(s.x), Math.round(s.y), s.r > 1 ? 2 : 1, s.r > 1 ? 2 : 1);
+      // cross sparkle for big stars
+      if (s.r > 1.2) {
+        ctx.globalAlpha = s.a * 0.4;
+        ctx.fillRect(Math.round(s.x)-2, Math.round(s.y), 1, 1);
+        ctx.fillRect(Math.round(s.x)+2, Math.round(s.y), 1, 1);
+        ctx.fillRect(Math.round(s.x), Math.round(s.y)-2, 1, 1);
+        ctx.fillRect(Math.round(s.x), Math.round(s.y)+2, 1, 1);
+      }
+    });
+    ctx.globalAlpha = 1;
+  }
 
   let animFrame = null;
   let paused = false;
