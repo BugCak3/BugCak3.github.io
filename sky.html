@@ -421,10 +421,13 @@ body {
   max-width: 100%;
   max-height: calc(90vh - 120px);
   display: block;
-  image-rendering: pixelated;  /* mantiene la calidad pixel art */
+  image-rendering: pixelated;
 }
 .modal-media-wrap video {
   image-rendering: auto;
+  will-change: transform;
+  transform: translateZ(0); /* fuerza GPU layer */
+  backface-visibility: hidden;
 }
 
 /* placeholder mientras carga */
@@ -816,9 +819,9 @@ window.addEventListener('pageshow', e => {
 
   let currentVideo = null;
 
-  /* Convierte el título en nombre de archivo, respetando mayúsculas */
+  /* Convierte el título en nombre de archivo — espacios → guiones bajos */
   function titleToFile(title, ext) {
-    return title + '.' + ext;
+    return title.replace(/ /g, '_') + '.' + ext;
   }
 
   /* Intenta cargar gif primero; si falla, intenta mp4 */
@@ -862,11 +865,18 @@ window.addEventListener('pageshow', e => {
           mediaWrap.appendChild(img);
         } else {
           const vid = document.createElement('video');
-          vid.src      = src;
-          vid.autoplay = true;
-          vid.loop     = true;
-          vid.controls = true;
+          vid.src         = src;
+          vid.autoplay    = true;
+          vid.loop        = true;
+          vid.controls    = true;
           vid.playsInline = true;
+          vid.muted       = false;
+          vid.preload     = 'auto';
+          // forzar hardware acceleration con will-change
+          vid.style.willChange = 'transform';
+          vid.style.transform  = 'translateZ(0)';
+          // arrancar reproducción lo antes posible
+          vid.addEventListener('canplay', () => vid.play().catch(() => {}), { once: true });
           mediaWrap.appendChild(vid);
           currentVideo = vid;
         }
