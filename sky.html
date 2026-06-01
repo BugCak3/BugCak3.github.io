@@ -21,7 +21,7 @@
   --warm:       #f8c888;
   --star1:      #fff0e0;
   --card-bg:    #1e1828;
-  --card-bd:    #5a4870;
+  --card-bd:    #5a4840;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -83,7 +83,6 @@ body {
   font-family: 'Silkscreen', monospace;
   font-size: 9px;
   letter-spacing: 6px;
-  color: var(--muted);
   margin-bottom: 16px;
 }
 
@@ -95,7 +94,6 @@ body {
   color: var(--title-c);
 }
 .sky-title em {
-  color: var(--accent);
   font-style: normal;
   text-shadow: 0 0 20px rgba(240,148,74,0.6);
 }
@@ -104,7 +102,6 @@ body {
   margin-top: 14px;
   font-size: 11px;
   line-height: 1.8;
-  color: var(--muted);
   max-width: 480px;
   margin-left: auto;
   margin-right: auto;
@@ -132,20 +129,61 @@ body {
   font-family: 'Silkscreen', monospace;
   font-size: 11px;
   letter-spacing: 2px;
-  color: var(--muted);
+  color: var(--text);
   border: 1.5px solid var(--border);
-  background: transparent;
+  background: rgba(10, 18, 36, 0.75);
   padding: 9px 20px;
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
   user-select: none;
 }
-.filter-pill:hover { color: var(--text); border-color: var(--border-dk); }
-.filter-pill.active {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: rgba(240,148,74,0.12);
-  box-shadow: 0 0 10px rgba(240,148,74,0.18);
+.filter-pill:hover {
+  color: var(--text);
+  border-color: var(--border-dk);
+  background: rgba(20, 32, 60, 0.88);
+}
+
+/* cada pill con su propio pastel */
+.filter-pill[data-filter="all"] {
+  background: rgba(244,200,160,0.18);
+  border-color: rgba(244,200,160,0.5);
+  color: #f4c8a0;
+}
+.filter-pill[data-filter="all"]:hover,
+.filter-pill[data-filter="all"].active {
+  background: rgba(244,200,160,0.32);
+  border-color: #f4c8a0;
+  box-shadow: 0 0 14px rgba(244,200,160,0.25);
+}
+.filter-pill[data-filter="personaje"] {
+  background: rgba(240,160,96,0.18);
+  border-color: rgba(240,160,96,0.5);
+}
+.filter-pill[data-filter="personaje"]:hover,
+.filter-pill[data-filter="personaje"].active {
+  background: rgba(240,160,96,0.32);
+  border-color: #f0a060;
+  box-shadow: 0 0 14px rgba(240,160,96,0.25);
+}
+.filter-pill[data-filter="escena"] {
+  background: rgba(168,152,200,0.18);
+  border-color: rgba(168,152,200,0.5);
+}
+.filter-pill[data-filter="escena"]:hover,
+.filter-pill[data-filter="escena"].active {
+  background: rgba(168,152,200,0.32);
+  border-color: #c0b0e8;
+  box-shadow: 0 0 14px rgba(168,152,200,0.25);
+}
+.filter-pill[data-filter="objeto"] {
+  background: rgba(160,196,255,0.18);
+  border-color: rgba(160,196,255,0.5);
+}
+.filter-pill[data-filter="objeto"]:hover,
+.filter-pill[data-filter="objeto"].active {
+  background: rgba(160,196,255,0.32);
+  color: #a0c4ff;
+  box-shadow: 0 0 14px rgba(160,196,255,0.25);
 }
 
 /* ── GALLERY GRID ─── */
@@ -171,11 +209,12 @@ body {
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  aspect-ratio: 1 / 1;  /* toda la card es cuadrada */
 }
 .art-card:hover {
   border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(240,148,74,0.22), 4px 4px 0 var(--border-dk);
-  transform: translateY(-3px);
+  box-shadow: 0 0 24px rgba(106,174,255,0.22), 4px 4px 0 var(--border-dk);
+  transform: translateY(-4px);
 }
 .art-card.card-out {
   opacity: 0 !important;
@@ -191,17 +230,22 @@ body {
   100% { opacity: 1; transform: translateY(0)     scale(1); }
 }
 
+/* preview — ocupa toda la card */
 .card-img-wrap {
-  position: relative;
-  aspect-ratio: 1 / 1;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
   background: var(--sky-glow);
 }
+.card-img-wrap img,
+.card-img-wrap video,
 .card-img-wrap canvas {
   width: 100%; height: 100%;
   display: block;
+  object-fit: cover;
   image-rendering: pixelated;
 }
+.card-img-wrap video { image-rendering: auto; }
 
 /* shimmer on hover */
 .card-img-wrap::after {
@@ -209,7 +253,7 @@ body {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg,
-    transparent 30%, rgba(255,180,80,0.14) 50%, transparent 70%);
+    transparent 30%, rgba(106,174,255,0.12) 50%, transparent 70%);
   opacity: 0;
   transform: translateX(-100%);
   transition: opacity 0.3s;
@@ -221,38 +265,71 @@ body {
   transition: transform 0.6s ease, opacity 0.3s;
 }
 
+/* overlay degradado abajo para el título */
 .card-bar {
-  background: var(--sky-glow);
-  border-top: 1.5px solid var(--card-bd);
-  padding: 10px 12px 12px;
-  transition: border-color 0.3s;
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 28px 12px 12px;
+  background: linear-gradient(to top,
+    rgba(3,6,12,0.92) 0%,
+    rgba(3,6,12,0.6)  55%,
+    transparent       100%);
+  border-top: none;
+  transition: background 0.3s;
+  z-index: 2;
 }
-.art-card:hover .card-bar { border-color: var(--accent); }
+.art-card:hover .card-bar {
+  background: linear-gradient(to top,
+    rgba(3,6,12,0.97) 0%,
+    rgba(3,6,12,0.75) 55%,
+    transparent       100%);
+}
+.art-card:hover .card-bar { border-color: transparent; }
 
 .card-title {
   font-family: 'Silkscreen', monospace;
   font-size: 9px;
   letter-spacing: 2px;
   color: var(--title-c);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
 }
 .card-tag {
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 1px;
   color: var(--muted);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
 }
 
-/* star glow on card hover */
+/* glow de la card */
 .card-glow {
   position: absolute;
   inset: -40%;
   background: radial-gradient(ellipse at 50% 50%,
-    rgba(240,148,74,0.14) 0%, transparent 65%);
+    rgba(106,174,255,0.10) 0%, transparent 65%);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s;
+  z-index: 1;
 }
 .art-card:hover .card-glow { opacity: 1; }
+
+/* icono de play para videos */
+.card-play-icon {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 24px; height: 24px;
+  background: rgba(3,6,12,0.7);
+  border: 1px solid rgba(106,174,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  color: var(--accent);
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.art-card:hover .card-play-icon { opacity: 1; }
 
 /* ── EMPTY STATE ─── */
 .empty-state {
@@ -272,7 +349,7 @@ body {
   font-family: 'Silkscreen', monospace;
   font-size: 9px;
   letter-spacing: 2px;
-  color: var(--muted);
+  color: #ffffff;
   background: transparent;
   border: 1.5px solid var(--border);
   padding: 8px 18px;
@@ -306,7 +383,7 @@ body {
   letter-spacing: 2px;
   color: var(--muted);
 }
-.sky-footer span { color: var(--accent); }
+.sky-footer span { color: #ffffff }
 
 /* ── RESPONSIVE ─── */
 @media (max-width: 600px) {
@@ -752,7 +829,8 @@ body {
 })();
 
 /* ════════════════════════════════════════
-   CARD PLACEHOLDERS
+   CARD PREVIEWS — carga el archivo real como preview
+   Si no existe, dibuja el placeholder de color
 ════════════════════════════════════════ */
 const PALETTES = {
   blue:   { bg:'#1e1008', stars:['#f0b060','#f8d090','#fff0c0'], accent:'#c06820' },
@@ -763,39 +841,104 @@ const PALETTES = {
   rose:   { bg:'#220c10', stars:['#f06848','#f89070','#ffc8a8'], accent:'#b03820' },
 };
 
-document.querySelectorAll('.card-placeholder').forEach(canvas => {
-  const pal = PALETTES[canvas.dataset.palette] || PALETTES.blue;
+function drawPlaceholder(canvas, palette) {
+  const pal = PALETTES[palette] || PALETTES.blue;
   const wrap = canvas.parentElement;
   canvas.width  = wrap.offsetWidth  || 260;
   canvas.height = wrap.offsetHeight || 260;
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
-
-  // bg
   ctx.fillStyle = pal.bg; ctx.fillRect(0,0,W,H);
-
-  // soft glow center
   const g = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*0.5);
-  g.addColorStop(0,   pal.accent + '44');
-  g.addColorStop(1,   'transparent');
+  g.addColorStop(0, pal.accent + '44'); g.addColorStop(1, 'transparent');
   ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-
-  // pixel stars
   for (let i = 0; i < 40; i++) {
     const col = pal.stars[Math.floor(Math.random()*pal.stars.length)];
     ctx.fillStyle = col;
     ctx.globalAlpha = 0.3 + Math.random()*0.7;
-    const sz = Math.random() < 0.15 ? 2 : 1;
-    ctx.fillRect(Math.random()*W|0, Math.random()*H|0, sz, sz);
+    ctx.fillRect(Math.random()*W|0, Math.random()*H|0, Math.random()<0.15?2:1, Math.random()<0.15?2:1);
   }
   ctx.globalAlpha = 1;
-
-  // placeholder label
   ctx.fillStyle = pal.stars[0] + '88';
   ctx.font = 'bold 9px monospace';
   ctx.textAlign = 'center';
   ctx.fillText('[ pon tu imagen aquí ]', W/2, H/2+4);
-});
+}
+
+function loadCardPreview(card) {
+  const title   = card.querySelector('.card-title').textContent.trim();
+  const canvas  = card.querySelector('.card-placeholder');
+  const wrap    = card.querySelector('.card-img-wrap');
+  const palette = canvas ? canvas.dataset.palette : 'blue';
+
+  function tryFile(ext, cb) {
+    const src = title.replace(/ /g, '_') + '.' + ext;
+    if (ext === 'mp4' || ext === 'webm') {
+      const v = document.createElement('video');
+      v.oncanplay = () => cb('video', src, ext);
+      v.onerror   = () => cb(null);
+      v.src = src;
+      v.preload = 'metadata';
+    } else {
+      const img = new Image();
+      img.onload  = () => cb('img', src, ext);
+      img.onerror = () => cb(null);
+      img.src = src;
+    }
+  }
+
+  function showMedia(type, src, ext) {
+    if (canvas) canvas.remove();
+    // quitar play icon viejo si hay
+    const oldIcon = card.querySelector('.card-play-icon');
+    if (oldIcon) oldIcon.remove();
+
+    if (type === 'video') {
+      const vid = document.createElement('video');
+      vid.src         = src;
+      vid.autoplay    = true;
+      vid.loop        = true;
+      vid.muted       = true;
+      vid.playsInline = true;
+      vid.preload     = 'auto';
+      vid.style.imageRendering = 'auto';
+      wrap.appendChild(vid);
+      vid.play().catch(() => {});
+      // icono ▶ en esquina
+      const icon = document.createElement('div');
+      icon.className   = 'card-play-icon';
+      icon.textContent = '▶';
+      card.appendChild(icon);
+    } else {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = title;
+      wrap.appendChild(img);
+    }
+  }
+
+  function showPlaceholder() {
+    if (canvas) drawPlaceholder(canvas, palette);
+  }
+
+  // intenta en orden: webm → mp4 → webp → gif → placeholder
+  tryFile('webm', (type, src, ext) => {
+    if (type) { showMedia(type, src, ext); return; }
+    tryFile('mp4', (type, src, ext) => {
+      if (type) { showMedia(type, src, ext); return; }
+      tryFile('webp', (type, src, ext) => {
+        if (type) { showMedia(type, src, ext); return; }
+        tryFile('gif', (type, src, ext) => {
+          if (type) { showMedia(type, src, ext); return; }
+          showPlaceholder();
+        });
+      });
+    });
+  });
+}
+
+// cargar preview de cada card
+document.querySelectorAll('.art-card').forEach(card => loadCardPreview(card));
 
 /* ════════════════════════════════════════
    FILTER PILLS
@@ -904,10 +1047,11 @@ window.addEventListener('pageshow', e => {
     return title.replace(/ /g, '_') + '.' + ext;
   }
 
-  /* Prueba webm → mp4 → gif en orden */
+  /* Prueba webm → mp4 → webp → gif en orden */
   function loadMedia(title, onLoad, onError) {
-    const webm = titleToFile(title, 'webp');
+    const webm = titleToFile(title, 'webm');
     const mp4  = titleToFile(title, 'mp4');
+    const webp = titleToFile(title, 'webp');
     const gif  = titleToFile(title, 'gif');
     function tryGif() {
       const img = new Image();
@@ -915,10 +1059,16 @@ window.addEventListener('pageshow', e => {
       img.onerror = () => onError();
       img.src = gif;
     }
+    function tryWebp() {
+      const img = new Image();
+      img.onload  = () => onLoad('webp', webp);
+      img.onerror = tryGif;
+      img.src = webp;
+    }
     function tryMp4() {
       const v = document.createElement('video');
       v.oncanplay = () => onLoad('mp4', mp4);
-      v.onerror   = tryGif;
+      v.onerror   = tryWebp;
       v.src = mp4;
     }
     function tryWebm() {
@@ -954,7 +1104,7 @@ window.addEventListener('pageshow', e => {
       title,
       (type, src) => {
         mediaWrap.innerHTML = '';
-        if (type === 'gif') {
+        if (type === 'gif' || type === 'webp') {
           const img = document.createElement('img');
           img.src = src;
           img.alt = title;
