@@ -725,11 +725,12 @@ document.querySelectorAll('.filter-pill').forEach(btn => {
 ════════════════════════════════════════ */
 function goBack() {
   const flash = document.getElementById('entry-flash');
-  flash.style.animation = 'none';
-  flash.style.opacity   = '0';
+  flash.style.display    = '';          // quitar el display:none del showContent anterior
+  flash.style.transition = 'none';
+  flash.style.opacity    = '0';
+  flash.getBoundingClientRect();        // flush
   flash.style.transition = 'opacity 0.5s ease';
-  flash.getBoundingClientRect();
-  flash.style.opacity = '1';
+  flash.style.opacity    = '1';
   sessionStorage.setItem('fromSky', '1');
   setTimeout(() => { window.location.href = 'index.html'; }, 560);
 }
