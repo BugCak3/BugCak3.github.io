@@ -906,7 +906,7 @@ window.addEventListener('pageshow', e => {
 
   /* Prueba webm → mp4 → gif en orden */
   function loadMedia(title, onLoad, onError) {
-    const webm = titleToFile(title, 'webm');
+    const webm = titleToFile(title, 'webp');
     const mp4  = titleToFile(title, 'mp4');
     const gif  = titleToFile(title, 'gif');
     function tryGif() {
