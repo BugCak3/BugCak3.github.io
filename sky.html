@@ -868,14 +868,11 @@ window.addEventListener('pageshow', e => {
           vid.src         = src;
           vid.autoplay    = true;
           vid.loop        = true;
-          vid.controls    = true;
+          vid.muted       = true;
           vid.playsInline = true;
-          vid.muted       = false;
           vid.preload     = 'auto';
-          // forzar hardware acceleration con will-change
           vid.style.willChange = 'transform';
           vid.style.transform  = 'translateZ(0)';
-          // arrancar reproducción lo antes posible
           vid.addEventListener('canplay', () => vid.play().catch(() => {}), { once: true });
           mediaWrap.appendChild(vid);
           currentVideo = vid;
