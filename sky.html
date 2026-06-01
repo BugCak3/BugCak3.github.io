@@ -9,19 +9,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
-  --sky-deep:   #04080f;
-  --sky-mid:    #080d1a;
-  --sky-glow:   #0d1628;
-  --border:     #1e2d4a;
-  --border-dk:  #2a3e5e;
-  --title-c:    #8ab4e8;
-  --text:       #c8d8f0;
-  --muted:      #4a6080;
-  --accent:     #6aaeff;
-  --warm:       #a0c4ff;
-  --star1:      #e8f0ff;
-  --card-bg:    #080e1c;
-  --card-bd:    #1a2840;
+  --sky-deep:   #a8c8e8;
+  --sky-mid:    #2e1f5e;
+  --sky-glow:   #4a2870;
+  --border:     #8878a8;
+  --border-dk:  #a898c8;
+  --title-c:    #f4c8a0;
+  --text:       #f8e8d8;
+  --muted:      #b8a090;
+  --accent:     #f0a060;
+  --warm:       #f8c888;
+  --star1:      #fff0e0;
+  --card-bg:    #1e1828;
+  --card-bd:    #5a4870;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,7 +53,7 @@ body {
   z-index: 300;
   pointer-events: none;
   background: radial-gradient(ellipse at 50% 50%,
-    #ffffff 0%, #e8f4ff 25%, #b8d8ff 55%, #6aaeff 80%, transparent 100%);
+    #ffffff 0%, #fff0f8 25%, #f8d0c0 55%, #f0a878 80%, transparent 100%);
   opacity: 0;
   transition: opacity 0.9s cubic-bezier(0.4, 0, 0.6, 1);
 }
@@ -97,7 +97,7 @@ body {
 .sky-title em {
   color: var(--accent);
   font-style: normal;
-  text-shadow: 0 0 20px rgba(106,174,255,0.5);
+  text-shadow: 0 0 20px rgba(240,148,74,0.6);
 }
 
 .sky-desc {
@@ -144,8 +144,8 @@ body {
 .filter-pill.active {
   color: var(--accent);
   border-color: var(--accent);
-  background: rgba(106,174,255,0.08);
-  box-shadow: 0 0 10px rgba(106,174,255,0.15);
+  background: rgba(240,148,74,0.12);
+  box-shadow: 0 0 10px rgba(240,148,74,0.18);
 }
 
 /* ── GALLERY GRID ─── */
@@ -174,7 +174,7 @@ body {
 }
 .art-card:hover {
   border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(106,174,255,0.18), 4px 4px 0 var(--border-dk);
+  box-shadow: 0 0 20px rgba(240,148,74,0.22), 4px 4px 0 var(--border-dk);
   transform: translateY(-3px);
 }
 .art-card.card-out {
@@ -209,7 +209,7 @@ body {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg,
-    transparent 30%, rgba(106,174,255,0.12) 50%, transparent 70%);
+    transparent 30%, rgba(255,180,80,0.14) 50%, transparent 70%);
   opacity: 0;
   transform: translateX(-100%);
   transition: opacity 0.3s;
@@ -247,7 +247,7 @@ body {
   position: absolute;
   inset: -40%;
   background: radial-gradient(ellipse at 50% 50%,
-    rgba(106,174,255,0.12) 0%, transparent 65%);
+    rgba(240,148,74,0.14) 0%, transparent 65%);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s;
@@ -287,12 +287,12 @@ body {
 .sky-back:hover {
   color: var(--accent);
   border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(106,174,255,0.2);
+  box-shadow: 0 0 12px rgba(240,148,74,0.22);
 }
 
 /* ── FOOTER ─── */
 .sky-footer {
-  background: #030609;
+  background: #140e22;
   border-top: 1px solid var(--border);
   padding: 18px 40px;
   text-align: center;
@@ -346,7 +346,7 @@ body {
   z-index: 1;
   background: #060c1a;
   border: 1.5px solid var(--border-dk);
-  box-shadow: 0 0 60px rgba(106,174,255,0.15), 8px 8px 0 #0a1428;
+  box-shadow: 0 0 60px rgba(240,148,74,0.18), 8px 8px 0 #2a1008;
   max-width: 860px;
   width: 100%;
   max-height: 90vh;
@@ -395,7 +395,7 @@ body {
 .modal-close:hover {
   color: var(--accent);
   border-color: var(--accent);
-  box-shadow: 0 0 10px rgba(106,174,255,0.2);
+  box-shadow: 0 0 10px rgba(240,148,74,0.22);
 }
 
 /* área del media */
@@ -407,7 +407,7 @@ body {
   justify-content: center;
   padding: 20px;
   min-height: 200px;
-  background: #030609;
+  background: #140e22;
 }
 .modal-media-wrap img,
 .modal-media-wrap video {
@@ -447,7 +447,7 @@ body {
   opacity: 0;
   transition: opacity 0.3s ease;
   white-space: nowrap;
-  box-shadow: 0 0 14px rgba(106,174,255,0.15);
+  box-shadow: 0 0 14px rgba(240,148,74,0.18);
   user-select: none;
 }
 .vol-icon.show { opacity: 1; }
@@ -617,35 +617,133 @@ body {
   function draw() {
     const W = window.innerWidth, H = window.innerHeight;
     ctx.clearRect(0, 0, W, H);
-    [
-      [W*0.3, H*0.25, W*0.45, '26,42,110', 0.045],
-      [W*0.72, H*0.6,  W*0.4,  '42,26,78',  0.035],
-      [W*0.5,  H*0.5,  W*0.5,  '10,26,62',  0.03 ],
-    ].forEach(([x, y, r, rgb, a]) => {
-      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, `rgba(${rgb},${a})`);
-      g.addColorStop(1, 'transparent');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
-    });
-    const n = Math.floor((W * H) / 6500);
+
+    // ── DEGRADADO: azul celeste arriba → lila → rosa → naranja dorado abajo ──
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+    skyGrad.addColorStop(0.00, '#7ab0d8');
+    skyGrad.addColorStop(0.20, '#9bbcd8');
+    skyGrad.addColorStop(0.38, '#c4a8d0');
+    skyGrad.addColorStop(0.55, '#e0b8c0');
+    skyGrad.addColorStop(0.72, '#f0c890');
+    skyGrad.addColorStop(0.88, '#f4b868');
+    skyGrad.addColorStop(1.00, '#f0a848');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // brillo solar suave desde el horizonte
+    const sunG = ctx.createRadialGradient(W*0.52, H*1.05, 0, W*0.52, H*1.05, W*0.65);
+    sunG.addColorStop(0,   'rgba(255,220,140,0.45)');
+    sunG.addColorStop(0.4, 'rgba(255,180,90,0.18)');
+    sunG.addColorStop(1,   'transparent');
+    ctx.fillStyle = sunG;
+    ctx.fillRect(0, 0, W, H);
+
+    // brillo lila alto (cielo Sky)
+    const hiG = ctx.createRadialGradient(W*0.3, 0, 0, W*0.3, 0, W*0.6);
+    hiG.addColorStop(0,   'rgba(180,160,220,0.28)');
+    hiG.addColorStop(1,   'transparent');
+    ctx.fillStyle = hiG;
+    ctx.fillRect(0, 0, W, H);
+
+    // ── MONTAÑA DE EDEN — silueta ──
+    const mCx = W * 0.5;
+    const mBase = H;
+    const mH = H * 0.72;
+
+    // sombra difusa
+    const mGlow = ctx.createRadialGradient(mCx, mBase-mH*0.4, 0, mCx, mBase-mH*0.4, W*0.38);
+    mGlow.addColorStop(0,   'rgba(90,60,100,0.20)');
+    mGlow.addColorStop(1,   'transparent');
+    ctx.fillStyle = mGlow;
+    ctx.fillRect(0, 0, W, H);
+
+    // silueta montaña principal
+    ctx.beginPath();
+    ctx.moveTo(0, mBase);
+    ctx.lineTo(mCx - W*0.42, mBase);
+    ctx.lineTo(mCx - W*0.28, mBase - mH*0.38);
+    ctx.lineTo(mCx - W*0.18, mBase - mH*0.52);
+    ctx.lineTo(mCx - W*0.06, mBase - mH*0.88);
+    ctx.lineTo(mCx,           mBase - mH);
+    ctx.lineTo(mCx + W*0.06, mBase - mH*0.88);
+    ctx.lineTo(mCx + W*0.18, mBase - mH*0.52);
+    ctx.lineTo(mCx + W*0.28, mBase - mH*0.38);
+    ctx.lineTo(mCx + W*0.42, mBase);
+    ctx.lineTo(W, mBase);
+    ctx.closePath();
+    const mFill = ctx.createLinearGradient(mCx, mBase-mH, mCx, mBase);
+    mFill.addColorStop(0.0,  'rgba(80,55,90,0.80)');
+    mFill.addColorStop(0.4,  'rgba(100,70,110,0.76)');
+    mFill.addColorStop(1.0,  'rgba(70,50,70,0.88)');
+    ctx.fillStyle = mFill;
+    ctx.fill();
+
+    // luz suave en el lado derecho del pico
+    ctx.beginPath();
+    ctx.moveTo(mCx, mBase-mH);
+    ctx.lineTo(mCx+W*0.06, mBase-mH*0.88);
+    ctx.lineTo(mCx+W*0.10, mBase-mH*0.50);
+    ctx.lineTo(mCx+W*0.03, mBase-mH*0.84);
+    ctx.lineTo(mCx, mBase-mH*0.96);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(200,160,180,0.14)';
+    ctx.fill();
+
+    // brillo pico Eden
+    const peakG = ctx.createRadialGradient(mCx, mBase-mH, 0, mCx, mBase-mH, W*0.09);
+    peakG.addColorStop(0,   'rgba(255,230,180,0.50)');
+    peakG.addColorStop(0.5, 'rgba(255,200,120,0.16)');
+    peakG.addColorStop(1,   'transparent');
+    ctx.fillStyle = peakG;
+    ctx.fillRect(0, 0, W, H);
+
+    // ── TEMPLOS / RUINAS ──
+    function temple(x, w, h, tiers) {
+      const baseY = H;
+      ctx.fillStyle = 'rgba(55,38,60,0.90)';
+      ctx.fillRect(x-w/2,     baseY-h*0.25, w,      h*0.25);
+      ctx.fillRect(x-w*0.38,  baseY-h*0.65, w*0.76, h*0.40);
+      if (tiers >= 2) ctx.fillRect(x-w*0.26, baseY-h*0.82, w*0.52, h*0.18);
+      if (tiers >= 3) ctx.fillRect(x-w*0.14, baseY-h*0.94, w*0.28, h*0.12);
+      ctx.fillRect(x-w*0.04,  baseY-h,      w*0.08, h*0.06);
+    }
+
+    temple(W*0.06,  W*0.055, H*0.30, 3);
+    temple(W*0.13,  W*0.040, H*0.22, 2);
+    temple(W*0.19,  W*0.048, H*0.26, 3);
+    temple(W*0.265, W*0.032, H*0.18, 2);
+    temple(W*0.94,  W*0.055, H*0.30, 3);
+    temple(W*0.87,  W*0.040, H*0.22, 2);
+    temple(W*0.81,  W*0.048, H*0.26, 3);
+    temple(W*0.735, W*0.032, H*0.18, 2);
+
+    // ── TERRENO base ──
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    ctx.lineTo(0, H*0.88);
+    ctx.bezierCurveTo(W*0.1,H*0.84, W*0.25,H*0.90, W*0.38,H*0.86);
+    ctx.bezierCurveTo(W*0.45,H*0.84, W*0.50,H*0.85, W*0.55,H*0.84);
+    ctx.bezierCurveTo(W*0.68,H*0.82, W*0.80,H*0.88, W*0.92,H*0.86);
+    ctx.lineTo(W, H*0.88);
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    const gFill = ctx.createLinearGradient(0, H*0.84, 0, H);
+    gFill.addColorStop(0, 'rgba(50,35,55,0.92)');
+    gFill.addColorStop(1, 'rgba(30,20,35,0.98)');
+    ctx.fillStyle = gFill;
+    ctx.fill();
+
+    // ── ESTRELLAS escasas en el cielo alto ──
+    const n = Math.floor((W * H) / 18000);
     for (let i = 0; i < n; i++) {
-      const bright = Math.random() < 0.12;
-      const big    = Math.random() < 0.08;
       const x = Math.random() * W | 0;
-      const y = Math.random() * H | 0;
-      ctx.globalAlpha = 0.35 + Math.random() * 0.65;
-      ctx.fillStyle = bright ? '#c8deff' : '#e8f0ff';
-      ctx.fillRect(x, y, big ? 2 : 1, big ? 2 : 1);
-      if (big && bright) {
-        ctx.globalAlpha *= 0.35;
-        ctx.fillRect(x-2,y,1,1); ctx.fillRect(x+2,y,1,1);
-        ctx.fillRect(x,y-2,1,1); ctx.fillRect(x,y+2,1,1);
-      }
+      const y = Math.random() * H * 0.22 | 0;
+      ctx.globalAlpha = 0.15 + Math.random() * 0.40;
+      ctx.fillStyle = Math.random() < 0.5 ? '#ffe8d0' : '#d8c8f0';
+      ctx.fillRect(x, y, 1, 1);
     }
     ctx.globalAlpha = 1;
   }
-
   window._starPause  = () => {};
   window._starResume = () => {};
 
@@ -657,12 +755,12 @@ body {
    CARD PLACEHOLDERS
 ════════════════════════════════════════ */
 const PALETTES = {
-  blue:   { bg:'#060e1e', stars:['#6aaeff','#a0c4ff','#c8deff'], accent:'#4080c0' },
-  purple: { bg:'#0e0618', stars:['#a060ff','#c090ff','#e0c0ff'], accent:'#6030a0' },
-  teal:   { bg:'#041418', stars:['#30c0d0','#80e0e8','#c0f0f4'], accent:'#108090' },
-  gold:   { bg:'#100c04', stars:['#e0a030','#f0c060','#fff0a0'], accent:'#a06010' },
-  night:  { bg:'#04060e', stars:['#4060a0','#6080c0','#a0b8e8'], accent:'#203060' },
-  rose:   { bg:'#140810', stars:['#e060a0','#f090c0','#ffc0e0'], accent:'#903060' },
+  blue:   { bg:'#1e1008', stars:['#f0b060','#f8d090','#fff0c0'], accent:'#c06820' },
+  purple: { bg:'#200e14', stars:['#e07890','#f0a0b0','#ffd0d8'], accent:'#a04050' },
+  teal:   { bg:'#0e1810', stars:['#70c890','#a0e0b0','#d0f4d8'], accent:'#308050' },
+  gold:   { bg:'#1e1004', stars:['#f0a030','#f8c860','#fff0a0'], accent:'#c07010' },
+  night:  { bg:'#180e18', stars:['#c080e0','#d8a8f0','#f0d0ff'], accent:'#804090' },
+  rose:   { bg:'#220c10', stars:['#f06848','#f89070','#ffc8a8'], accent:'#b03820' },
 };
 
 document.querySelectorAll('.card-placeholder').forEach(canvas => {
@@ -693,7 +791,7 @@ document.querySelectorAll('.card-placeholder').forEach(canvas => {
   ctx.globalAlpha = 1;
 
   // placeholder label
-  ctx.fillStyle = pal.stars[0] + '66';
+  ctx.fillStyle = pal.stars[0] + '88';
   ctx.font = 'bold 9px monospace';
   ctx.textAlign = 'center';
   ctx.fillText('[ pon tu imagen aquí ]', W/2, H/2+4);
