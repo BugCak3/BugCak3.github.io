@@ -531,7 +531,8 @@ body{
 (function(){
   const c=document.getElementById('star-canvas'),ctx=c.getContext('2d',{alpha:true});
   function draw(){
-    const W=window.innerWidth,H=window.innerHeight;
+    const DPR=Math.min(devicePixelRatio||1,1.5);
+    const W=c.width/DPR, H=c.height/DPR;
     const sky=ctx.createLinearGradient(0,0,0,H);
     sky.addColorStop(0.00,'#7ab0d8'); sky.addColorStop(0.20,'#9bbcd8');
     sky.addColorStop(0.38,'#c4a8d0'); sky.addColorStop(0.55,'#e0b8c0');
@@ -589,15 +590,24 @@ body{
     }
     ctx.globalAlpha=1;
   }
-  function resize(){
+  let _lastW=0;
+  function resize(force){
+    const W=innerWidth;
+    // En móvil, el navegador dispara resize al mostrar/ocultar la barra de URL
+    // (solo cambia la altura). Ignoramos esos eventos para evitar el salto del fondo.
+    if(!force && W===_lastW) return;
+    _lastW=W;
     const DPR=Math.min(devicePixelRatio||1,1.5);
-    c.width=innerWidth*DPR; c.height=innerHeight*DPR;
-    c.style.width=innerWidth+'px'; c.style.height=innerHeight+'px';
+    // Usamos screen.height para que el canvas cubra siempre la pantalla completa
+    // aunque la barra de URL aparezca o desaparezca
+    const H=Math.max(innerHeight, screen.height||innerHeight);
+    c.width=W*DPR; c.height=H*DPR;
+    c.style.width=W+'px'; c.style.height=H+'px';
     ctx.setTransform(DPR,0,0,DPR,0,0); draw();
   }
   window._starPause=window._starResume=()=>{};
-  resize();
-  let t; window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(resize,150)});
+  resize(true);
+  let t; window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(()=>resize(false),150)});
 })();
 
 /* ── CARD PREVIEWS ── */
