@@ -543,10 +543,6 @@ body{
     sunG.addColorStop(0,'rgba(255,220,140,.45)'); sunG.addColorStop(.4,'rgba(255,180,90,.18)'); sunG.addColorStop(1,'transparent');
     ctx.fillStyle=sunG; ctx.fillRect(0,0,W,H);
 
-    const hiG=ctx.createRadialGradient(W*.3,0,0,W*.3,0,W*.6);
-    hiG.addColorStop(0,'rgba(180,160,220,.28)'); hiG.addColorStop(1,'transparent');
-    ctx.fillStyle=hiG; ctx.fillRect(0,0,W,H);
-
     const mCx=W*.5,mBase=H,mH=H*.72;
     ctx.beginPath();
     ctx.moveTo(0,mBase);
