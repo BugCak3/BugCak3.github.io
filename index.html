@@ -137,7 +137,7 @@ body.dark .bulb-cord { background: #6a5a3a; }
   pointer-events: none;
   opacity: 0;
   background: radial-gradient(ellipse at 50% 50%,
-    #ffffff 0%, #e8f4ff 25%, #b8d8ff 55%, #6aaeff 80%, transparent 100%);
+    #ffffff 0%, #fff8e8 25%, #ffd980 55%, #d4a020 80%, transparent 100%);
   transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(1);
@@ -1063,7 +1063,7 @@ function syncFx(id) {
       vy:    -0.4 - Math.random() * 0.8,
       life:  0,
       maxL:  60 + Math.random() * 80,
-      hue:   180 + Math.random() * 60,  // azul-celeste-blanco
+      hue:   35 + Math.random() * 30,  // dorado-ámbar
     });
   }
 
@@ -1076,8 +1076,8 @@ function syncFx(id) {
     // brillo central
     const gx = c.width * 0.5, gy = c.height * 0.35;
     const gl = ctx.createRadialGradient(gx, gy, 0, gx, gy, c.width * 0.55);
-    gl.addColorStop(0,   'rgba(180,230,255,0.18)');
-    gl.addColorStop(0.4, 'rgba(120,180,255,0.07)');
+    gl.addColorStop(0,   'rgba(255,220,120,0.22)');
+    gl.addColorStop(0.4, 'rgba(220,170,60,0.09)');
     gl.addColorStop(1,   'transparent');
     ctx.fillStyle = gl;
     ctx.fillRect(0, 0, c.width, c.height);
