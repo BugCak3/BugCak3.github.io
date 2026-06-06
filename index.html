@@ -514,7 +514,105 @@ h1 em { color: var(--accent); font-style: normal; }
   z-index: 10;
 }
 
+#leaf-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#leaf-intro.active {
+  opacity: 1;
+  pointer-events: all;
+}
+#leaf-intro canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+#leaf-intro-bg {
+  background: #16121e;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+#leaf-intro.filling #leaf-intro-bg { opacity: 1; }
+
+/* ── SUB-PROYECTOS overlay ── */
+#sub-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#sub-overlay.sub-visible {
+  opacity: 1;
+  pointer-events: all;
+}
+#sub-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 8, 4, 0.82);
+  cursor: pointer;
+}
+#sub-projects {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: clamp(16px, 4vw, 48px);
+  justify-content: center;
+  align-items: flex-start;
+  padding: 16px;
+  flex-wrap: wrap;
+}
+.sub-win {
+  flex: 0 0 auto;
+  width: clamp(180px, 36vw, 300px);
+  opacity: 0;
+  transform: scale(0.82) translateY(24px);
+  transition:
+    opacity   0.4s cubic-bezier(0.34, 1.3, 0.64, 1),
+    transform 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.sub-win.sub-entered { opacity: 1; transform: scale(1) translateY(0); }
+
+/* personaje PNG que sobresale del cuadro */
+.char-img {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(18%);
+  height: 115%;
+  width: auto;
+  z-index: 6;
+  pointer-events: none;
+  image-rendering: pixelated;
+  transition: transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+.win-wrap:hover .char-img {
+  transform: translateX(-50%) translateY(12%) scale(1.04);
+}
+
+/* zoom leve al click en proyectos */
+#win-game { transform-origin: center center; }
+#win-game.game-zoom {
+  transform: scale(1.06) !important;
+  transition: transform 0.35s cubic-bezier(0.34, 1.1, 0.64, 1) !important;
+  z-index: 10;
+}
+
 @media (max-width: 600px) {
+  .sub-win { width: clamp(140px, 44vw, 220px); }
+  #sub-projects { gap: 12px; }
   #main-footer { flex-direction: column; align-items: flex-start; }
   .header-nav { flex-wrap: wrap; gap: 2px; }
 }
@@ -531,6 +629,45 @@ h1 em { color: var(--accent); font-style: normal; }
 <!-- curtain overlay -->
 <div id="sky-flash"></div>
 <div id="curtain"></div>
+
+<!-- leaf intro overlay (mi proyecto) -->
+<div id="leaf-intro">
+  <div id="leaf-intro-bg"></div>
+  <canvas id="leaf-intro-canvas"></canvas>
+</div>
+
+<!-- SUB-PROYECTOS overlay (aparece sobre todo al click en "proyectos") -->
+<div id="sub-overlay">
+  <div id="sub-backdrop"></div>
+  <div id="sub-projects">
+    <!-- MI PROYECTO -->
+    <div class="win-wrap sub-win" id="win-miproyecto">
+      <div class="win-magic-light"></div>
+      <div class="win-box">
+        <div class="win-bar"></div>
+        <div class="win-screen">
+          <canvas class="bg-canvas" id="bg-miproyecto"></canvas>
+          <canvas class="fx-canvas" id="fx-miproyecto"></canvas>
+          <img class="char-img" id="char-miproyecto" src="char-miproyecto.png" alt="Mi Proyecto" onerror="this.style.display='none'">
+        </div>
+      </div>
+      <p class="win-label">mi proyecto</p>
+    </div>
+    <!-- HASTA MORALIS -->
+    <div class="win-wrap sub-win" id="win-moralis">
+      <div class="win-magic-light"></div>
+      <div class="win-box">
+        <div class="win-bar"></div>
+        <div class="win-screen">
+          <canvas class="bg-canvas" id="bg-moralis"></canvas>
+          <canvas class="fx-canvas" id="fx-moralis"></canvas>
+          <img class="char-img" id="char-moralis" src="char-moralis.png" alt="Hasta Moralis" onerror="this.style.display='none'">
+        </div>
+      </div>
+      <p class="win-label">hasta moralis</p>
+    </div>
+  </div>
+</div>
 
 <!-- ══ GALLERY SECTION ══ -->
 <section id="section-gallery">
@@ -571,7 +708,7 @@ h1 em { color: var(--accent); font-style: normal; }
       <p class="win-label">sky</p>
     </div>
 
-    <!-- MI PROYECTO -->
+    <!-- PROYECTOS -->
     <div class="win-wrap" id="win-game">
       <div class="win-magic-light"></div>
       <div class="win-box">
@@ -582,7 +719,7 @@ h1 em { color: var(--accent); font-style: normal; }
           <canvas class="fx-canvas" id="fx-game"></canvas>
         </div>
       </div>
-      <p class="win-label">mi proyecto</p>
+      <p class="win-label">proyectos</p>
     </div>
 
     <!-- FANART -->
@@ -825,6 +962,84 @@ function drawGameBg(c) {
   ctx.strokeStyle='#2a2040'; ctx.lineWidth=2; ctx.strokeRect(W/2-S*5,H*0.55,S*10,H*0.45);
 }
 
+/* Fondo Mi Proyecto — bosque otoñal pixel */
+function drawMiProyectoBg(c) {
+  const ctx = c.getContext('2d'), W = c.width, H = c.height;
+  // cielo crepuscular
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#1a0e06'); g.addColorStop(0.5,'#3a1a08'); g.addColorStop(1,'#1e1208');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // suelo
+  ctx.fillStyle='#0e0a04'; ctx.fillRect(0,H*0.72,W,H*0.28);
+  // árboles pixel
+  const trees = [[W*0.1,H*0.5],[W*0.3,H*0.42],[W*0.6,H*0.48],[W*0.82,H*0.44]];
+  trees.forEach(([tx,ty]) => {
+    const tw = S*3, th = H*0.72-ty;
+    ctx.fillStyle='#2a1a08'; ctx.fillRect(tx-tw/2, ty, tw, th);
+    // copa
+    ctx.fillStyle='#6a2a08';
+    ctx.fillRect(tx-S*5, ty-S*4, S*10, S*5);
+    ctx.fillRect(tx-S*3, ty-S*8, S*6, S*5);
+    ctx.fillStyle='#c4521a';
+    ctx.fillRect(tx-S*4, ty-S*3, S*2, S*2);
+    ctx.fillRect(tx+S*2, ty-S*6, S*2, S*2);
+    ctx.fillRect(tx-S,   ty-S*7, S*2, S*2);
+  });
+  // luna
+  ctx.fillStyle='#f0e0b0'; ctx.fillRect(W*0.75,H*0.08,S*4,S*4);
+  ctx.fillStyle='#1a0e06'; ctx.fillRect(W*0.75+S,H*0.08,S*3,S*3);
+}
+
+/* Fondo Hasta Moralis — ciudad futurista / neon */
+function drawMoralisBg(c) {
+  const ctx = c.getContext('2d'), W = c.width, H = c.height;
+  // fondo oscuro
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#050818'); g.addColorStop(0.7,'#08102a'); g.addColorStop(1,'#020508');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // grid perspectiva suelo
+  ctx.strokeStyle='rgba(0,200,255,0.12)'; ctx.lineWidth=1;
+  const gy = H*0.68;
+  for(let i=0;i<=10;i++) {
+    const x = (W/10)*i;
+    ctx.beginPath(); ctx.moveTo(x,gy); ctx.lineTo(W/2, H*0.35); ctx.stroke();
+  }
+  for(let i=0;i<=6;i++) {
+    const t = i/6;
+    const y = gy + (H - gy)*t;
+    const lx = W/2 - (W/2)*(t*0.9+0.1);
+    const rx = W/2 + (W/2)*(t*0.9+0.1);
+    ctx.beginPath(); ctx.moveTo(lx,y); ctx.lineTo(rx,y); ctx.stroke();
+  }
+  // edificios silueta
+  const blds=[
+    [W*0.0,H*0.3,W*0.12,H*0.38,'#0a0f20'],
+    [W*0.10,H*0.2,W*0.10,H*0.48,'#080d1c'],
+    [W*0.78,H*0.25,W*0.10,H*0.43,'#080d1c'],
+    [W*0.86,H*0.35,W*0.14,H*0.33,'#0a0f20'],
+  ];
+  blds.forEach(([bx,by,bw,bh,bc]) => {
+    ctx.fillStyle=bc; ctx.fillRect(bx,by,bw,bh);
+    // ventanas neon
+    for(let r=0;r<3;r++) for(let col=0;col<2;col++) {
+      if(Math.random()<0.5) continue;
+      const wx=bx+S*1.5+col*S*3, wy=by+S*2+r*S*4;
+      ctx.fillStyle=`rgba(0,${150+Math.random()*100|0},255,0.6)`;
+      ctx.fillRect(wx,wy,S*1.5,S*2);
+    }
+  });
+  // estrellas
+  ctx.fillStyle='rgba(180,220,255,0.7)';
+  [[W*0.15,H*0.06],[W*0.35,H*0.10],[W*0.55,H*0.04],[W*0.70,H*0.12],[W*0.88,H*0.07],[W*0.45,H*0.16]].forEach(([sx,sy])=>{
+    ctx.fillRect(sx,sy,S*0.7,S*0.7);
+  });
+  // luna holográfica
+  ctx.strokeStyle='rgba(0,200,255,0.5)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(W*0.5,H*0.18,S*5,0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='rgba(0,200,255,0.2)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(W*0.5,H*0.18,S*7,0,Math.PI*2); ctx.stroke();
+}
+
 function drawVidBg(c) {
   const ctx = c.getContext('2d'), W = c.width, H = c.height;
   const g = ctx.createLinearGradient(0,0,0,H*0.6);
@@ -868,6 +1083,10 @@ const WINDOWS = [
   { wrapId:'win-vid',  bgId:'bg-vid',  animId:'anim-vid',  bgDraw:drawVidBg,  gifSrc:null, fps:12 },
   { wrapId:'win-anim', bgId:'bg-anim', animId:'anim-anim', bgDraw:drawAnimBg, gifSrc:null, fps:12 },
 ];
+const SUB_WINDOWS = [
+  { bgId:'bg-miproyecto', bgDraw:drawMiProyectoBg },
+  { bgId:'bg-moralis',    bgDraw:drawMoralisBg    },
+];
 const controllers = [];
 
 function initAll() {
@@ -879,6 +1098,16 @@ function initAll() {
     const ctrl = new WinAnim({ wrapId:cfg.wrapId, animId:cfg.animId, gifSrc:cfg.gifSrc, fps:cfg.fps });
     ctrl.syncSize();
     controllers.push(ctrl);
+  });
+}
+
+function initSubWindows() {
+  SUB_WINDOWS.forEach(cfg => {
+    const bgC = document.getElementById(cfg.bgId);
+    if (!bgC) return;
+    bgC.width  = bgC.offsetWidth  || bgC.parentElement.offsetWidth || 300;
+    bgC.height = bgC.offsetHeight || bgC.parentElement.offsetHeight || 300;
+    cfg.bgDraw(bgC);
   });
 }
 
@@ -945,6 +1174,205 @@ function goToSky() {
 }
 document.getElementById('win-sky').addEventListener('click', goToSky);
 
+/* ── proyectos → overlay con sub-cuadros ── */
+let projectsOpen = false;
+function toggleProjects() {
+  const winGame  = document.getElementById('win-game');
+  const overlay  = document.getElementById('sub-overlay');
+
+  if (projectsOpen) {
+    closeProjects();
+    return;
+  }
+
+  projectsOpen = true;
+
+  // zoom leve del cuadro padre
+  winGame.classList.add('game-zoom');
+  setTimeout(() => winGame.classList.remove('game-zoom'), 420);
+
+  // mostrar overlay
+  overlay.classList.add('sub-visible');
+
+  // inicializar fondos (primera vez) y animar entrada
+  requestAnimationFrame(() => {
+    initSubWindows();
+    overlay.querySelectorAll('.sub-win').forEach((el, i) => {
+      setTimeout(() => el.classList.add('sub-entered'), 80 + i * 130);
+    });
+    initMiProyectoFx();
+    initMoralisFx();
+  });
+}
+
+function closeProjects() {
+  const overlay = document.getElementById('sub-overlay');
+  overlay.querySelectorAll('.sub-win').forEach(el => el.classList.remove('sub-entered'));
+  setTimeout(() => {
+    overlay.classList.remove('sub-visible');
+    projectsOpen = false;
+  }, 320);
+}
+
+document.getElementById('win-game').addEventListener('click', toggleProjects);
+
+// cerrar al click en el backdrop
+document.getElementById('sub-backdrop').addEventListener('click', closeProjects);
+
+// cerrar con Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && projectsOpen) closeProjects(); });
+
+/* ── mi proyecto sub → hojas cubren pantalla ── */
+function goToMiProyecto() {
+  const intro  = document.getElementById('leaf-intro');
+  const canvas = document.getElementById('leaf-intro-canvas');
+  intro.classList.add('active');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const ctx = canvas.getContext('2d');
+  const leaves = [];
+  let raf = null, spawnCount = 0;
+
+  const LEAF_COLORS = ['#c4521a','#d4701a','#b83a0a','#e8922a','#c4391a','#a83010','#d4602a','#9e6030','#8a3010','#e07020'];
+
+  function spawnLeaf() {
+    const W = canvas.width, H = canvas.height;
+    const fromSide = Math.random() < 0.3;
+    leaves.push({
+      x:    fromSide ? (Math.random() < 0.5 ? -20 : W+20) : Math.random()*W,
+      y:    fromSide ? Math.random()*H*0.5 : -20-Math.random()*60,
+      size: 8 + Math.random()*20,
+      vx:   (Math.random()-0.5)*3, vy: 3+Math.random()*5,
+      rot:  Math.random()*Math.PI*2, vrot: (Math.random()-0.5)*0.15,
+      sway: Math.random()*Math.PI*2, swayS: 0.03+Math.random()*0.05,
+      color: LEAF_COLORS[Math.floor(Math.random()*LEAF_COLORS.length)], alpha:0,
+    });
+    spawnCount++;
+  }
+  function drawLeaf(x,y,size,rot,color,alpha) {
+    ctx.save(); ctx.globalAlpha=alpha; ctx.translate(x,y); ctx.rotate(rot);
+    ctx.fillStyle=color;
+    const s=size;
+    ctx.fillRect(-s*.5,-s,s,s*2); ctx.fillRect(-s,-s*.3,s*2,s*.6);
+    ctx.fillRect(-s*.7,-s*.7,s*1.4,s*.4); ctx.fillRect(-s*.7,s*.3,s*1.4,s*.4);
+    ctx.restore();
+  }
+  let coverStart=null, covered=false;
+  function tick(ts) {
+    raf=requestAnimationFrame(tick);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if (spawnCount<120 && Math.random()<(spawnCount<40?.95:.7)) spawnLeaf();
+    for(let i=leaves.length-1;i>=0;i--) {
+      const l=leaves[i];
+      l.alpha=Math.min(1,l.alpha+0.06); l.sway+=l.swayS;
+      l.x+=l.vx+Math.sin(l.sway)*1.2; l.y+=l.vy; l.rot+=l.vrot;
+      if(l.y>canvas.height*.5) l.vy*=0.985;
+      drawLeaf(l.x,l.y,l.size,l.rot,l.color,l.alpha);
+    }
+    if(!covered && spawnCount>=80 && !coverStart) coverStart=ts;
+    if(coverStart && ts-coverStart>500 && !covered) {
+      covered=true; intro.classList.add('filling');
+      setTimeout(()=>{ cancelAnimationFrame(raf); sessionStorage.setItem('fromProject','1'); window.location.href='proyecto.html'; },700);
+    }
+  }
+  setTimeout(()=>{ raf=requestAnimationFrame(tick); },60);
+}
+
+/* ── hasta moralis sub → glitch tech overlay ── */
+function goToMoralis() {
+  const intro  = document.getElementById('leaf-intro');
+  const canvas = document.getElementById('leaf-intro-canvas');
+  const bg     = document.getElementById('leaf-intro-bg');
+  intro.classList.add('active');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const ctx = canvas.getContext('2d');
+  bg.style.background = '#020810';
+
+  let raf = null, t = 0;
+
+  // líneas de datos / scanlines / partículas tech
+  const particles = [];
+  const lines = [];
+
+  function spawnLine() {
+    lines.push({
+      x: Math.random() * canvas.width,
+      y: -10,
+      w: 1 + Math.random() * 2,
+      h: 20 + Math.random() * 80,
+      vy: 4 + Math.random() * 8,
+      color: Math.random() < 0.6 ? '#00c8ff' : Math.random() < 0.5 ? '#00ff88' : '#ff00aa',
+      alpha: 0.4 + Math.random() * 0.6,
+    });
+  }
+  function spawnParticle() {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 3;
+    particles.push({
+      x: canvas.width / 2 + (Math.random()-0.5)*canvas.width*0.6,
+      y: canvas.height / 2 + (Math.random()-0.5)*canvas.height*0.6,
+      vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
+      size: 1+Math.random()*3, life:0, maxL:30+Math.random()*40,
+      color: Math.random()<0.5?'#00c8ff':'#00ff88',
+    });
+  }
+
+  let coverStart=null, covered=false;
+  function tick(ts) {
+    raf=requestAnimationFrame(tick);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    t++;
+
+    // scanline sweep
+    if(t%2===0) {
+      const sy=(t*6)%canvas.height;
+      ctx.fillStyle='rgba(0,200,255,0.04)';
+      ctx.fillRect(0,sy,canvas.width,3);
+    }
+
+    // spawn
+    if(Math.random()<0.4) spawnLine();
+    if(Math.random()<0.5) spawnParticle();
+
+    // draw lines
+    for(let i=lines.length-1;i>=0;i--) {
+      const l=lines[i]; l.y+=l.vy;
+      ctx.globalAlpha=l.alpha;
+      ctx.fillStyle=l.color;
+      ctx.fillRect(l.x,l.y,l.w,l.h);
+      if(l.y>canvas.height+10) lines.splice(i,1);
+    }
+    // draw particles
+    for(let i=particles.length-1;i>=0;i--) {
+      const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.life++;
+      if(p.life>p.maxL){particles.splice(i,1);continue;}
+      const a=(1-p.life/p.maxL)*0.8;
+      ctx.globalAlpha=a; ctx.fillStyle=p.color;
+      ctx.fillRect(Math.round(p.x),Math.round(p.y),p.size,p.size);
+    }
+    ctx.globalAlpha=1;
+
+    // glitch flash ocasional
+    if(t%18===0 && Math.random()<0.4) {
+      ctx.fillStyle='rgba(0,200,255,0.06)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+    }
+
+    if(!covered && t>40 && !coverStart) coverStart=ts;
+    if(coverStart && ts-coverStart>600 && !covered) {
+      covered=true; intro.classList.add('filling');
+      setTimeout(()=>{ cancelAnimationFrame(raf); sessionStorage.setItem('fromMoralis','1'); window.location.href='hastamoralis.html'; },700);
+    }
+  }
+  setTimeout(()=>{ raf=requestAnimationFrame(tick); },60);
+}
+
+document.getElementById('win-miproyecto').addEventListener('click', goToMiProyecto);
+document.getElementById('win-moralis').addEventListener('click', goToMoralis);
+
 /* ── about → sube desde abajo ── */
 function goToAbout() {
   wraps().forEach((el, i) => setTimeout(() => el.classList.add('win-exit'), i * 80));
@@ -974,8 +1402,10 @@ function runPageInit() {
     document.querySelector('header').classList.add('hdr-entered');
   });
 
-  const fromAbout = sessionStorage.getItem('fromAbout');
-  const fromMusic = sessionStorage.getItem('fromMusic');
+  const fromAbout   = sessionStorage.getItem('fromAbout');
+  const fromMusic   = sessionStorage.getItem('fromMusic');
+  const fromProject = sessionStorage.getItem('fromProject');
+  const fromMoralis = sessionStorage.getItem('fromMoralis');
 
   function enterWindows(prepClass) {
     wraps().forEach(el => { if (prepClass) el.classList.add(prepClass); });
@@ -994,6 +1424,14 @@ function runPageInit() {
     // curtain viene de arriba (about estaba arriba), sale hacia abajo
     curtainReveal('translateY(0%)', 'translateY(100%)');
     enterWindows('win-enter-below');
+
+  } else if (fromProject || fromMoralis) {
+    sessionStorage.removeItem('fromProject');
+    sessionStorage.removeItem('fromMoralis');
+    curtain.style.transition  = 'none';
+    curtain.style.transform   = 'translateY(100%)';
+    curtain.style.pointerEvents = 'none';
+    enterWindows(null);
 
   } else if (sessionStorage.getItem('fromSky')) {
     sessionStorage.removeItem('fromSky');
@@ -1333,8 +1771,107 @@ window.addEventListener('resize', () => {
     bgC.width = bgC.offsetWidth; bgC.height = bgC.offsetHeight;
     cfg.bgDraw(bgC);
   });
+  if (projectsOpen) {
+    SUB_WINDOWS.forEach(cfg => {
+      const bgC = document.getElementById(cfg.bgId);
+      if (!bgC || !bgC.offsetWidth) return;
+      bgC.width = bgC.offsetWidth; bgC.height = bgC.offsetHeight;
+      cfg.bgDraw(bgC);
+    });
+  }
   controllers.forEach(c => c.syncSize());
 });
+
+/* ══════════════════════════════
+   MI PROYECTO sub — hojas flotantes leves
+══════════════════════════════ */
+let miProyectoFxInited = false;
+function initMiProyectoFx() {
+  if (miProyectoFxInited) return;
+  miProyectoFxInited = true;
+  const wrap = document.getElementById('win-miproyecto');
+  const c    = document.getElementById('fx-miproyecto');
+  if (!wrap || !c) return;
+
+  const leaves=[]; let active=false, raf=null;
+  const COLORS=['#c4521a','#d4701a','#b83a0a','#e8922a','#c4391a','#a83010'];
+
+  function spawn() {
+    const W=c.width, H=c.height;
+    leaves.push({
+      x:Math.random()*W, y:-8, size:3+Math.random()*5,
+      vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1,
+      rot:Math.random()*Math.PI*2, vrot:(Math.random()-0.5)*0.1,
+      sway:Math.random()*Math.PI*2, swayS:0.04+Math.random()*0.04,
+      color:COLORS[Math.floor(Math.random()*COLORS.length)],
+    });
+  }
+  function drawL(ctx,x,y,s,rot,color) {
+    ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.fillStyle=color;
+    ctx.fillRect(-s*.5,-s,s,s*2); ctx.fillRect(-s,-s*.3,s*2,s*.6);
+    ctx.fillRect(-s*.7,-s*.7,s*1.4,s*.4); ctx.fillRect(-s*.7,s*.3,s*1.4,s*.4);
+    ctx.restore();
+  }
+  function tick() {
+    if(!active && leaves.length===0){c.getContext('2d').clearRect(0,0,c.width,c.height);return;}
+    raf=requestAnimationFrame(tick);
+    const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+    if(active && Math.random()<0.2) spawn();
+    for(let i=leaves.length-1;i>=0;i--) {
+      const l=leaves[i]; l.sway+=l.swayS;
+      l.x+=l.vx+Math.sin(l.sway)*.5; l.y+=l.vy; l.rot+=l.vrot;
+      if(l.y>c.height+10){leaves.splice(i,1);continue;}
+      drawL(ctx,l.x,l.y,l.size,l.rot,l.color);
+    }
+  }
+  function clearFx(cv){cv.getContext('2d').clearRect(0,0,cv.width,cv.height);}
+  wrap.addEventListener('mouseenter',()=>{syncFx('fx-miproyecto');active=true;if(!raf)tick();});
+  wrap.addEventListener('mouseleave',()=>{active=false;raf=null;});
+}
+
+/* ══════════════════════════════
+   HASTA MORALIS sub — partículas neon / glitch leve
+══════════════════════════════ */
+let moralisFxInited = false;
+function initMoralisFx() {
+  if (moralisFxInited) return;
+  moralisFxInited = true;
+  const wrap = document.getElementById('win-moralis');
+  const c    = document.getElementById('fx-moralis');
+  if (!wrap || !c) return;
+
+  const pts=[]; let active=false, raf=null;
+  const NEON=['#00c8ff','#00ff88','#ff00aa','#00ffff'];
+
+  function spawn() {
+    const W=c.width, H=c.height;
+    const angle=Math.random()*Math.PI*2, speed=0.4+Math.random()*1.5;
+    pts.push({
+      x:W*0.5+(Math.random()-0.5)*W*0.6,
+      y:H*0.5+(Math.random()-0.5)*H*0.6,
+      vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+      size:1+Math.random()*2.5,
+      life:0, maxL:50+Math.random()*50,
+      color:NEON[Math.floor(Math.random()*NEON.length)],
+    });
+  }
+  function tick() {
+    if(!active && pts.length===0){c.getContext('2d').clearRect(0,0,c.width,c.height);return;}
+    raf=requestAnimationFrame(tick);
+    const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+    if(active && Math.random()<0.4) spawn();
+    for(let i=pts.length-1;i>=0;i--) {
+      const p=pts[i]; p.x+=p.vx; p.y+=p.vy; p.life++;
+      if(p.life>p.maxL){pts.splice(i,1);continue;}
+      const a=(1-p.life/p.maxL)*0.85;
+      ctx.globalAlpha=a; ctx.fillStyle=p.color;
+      ctx.fillRect(Math.round(p.x),Math.round(p.y),p.size,p.size);
+    }
+    ctx.globalAlpha=1;
+  }
+  wrap.addEventListener('mouseenter',()=>{syncFx('fx-moralis');active=true;if(!raf)tick();});
+  wrap.addEventListener('mouseleave',()=>{active=false;raf=null;pts.length=0;});
+}
 </script>
 </body>
 </html>
